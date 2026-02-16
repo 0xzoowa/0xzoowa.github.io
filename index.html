@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>0xzoowa's space</title>
+
+    <style>
+      /* =========================
+   DESKTOP
+========================= */
+
+      body {
+        margin: 0;
+        background: #008080;
+        font-family: "Courier New", monospace;
+        overflow: hidden;
+      }
+
+      .desktop {
+        width: 100vw;
+        height: 100vh;
+        position: relative;
+      }
+
+      /* =========================
+   WINDOW
+========================= */
+
+      .window {
+        position: absolute;
+        width: 450px;
+        background: #e4e4e4;
+        border: 2px solid #000;
+        box-shadow: 4px 4px 0px #000;
+      }
+
+      .title-bar {
+        background: linear-gradient(to right, #000080, #0000cd);
+        color: white;
+        padding: 5px 8px;
+        cursor: move;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: bold;
+      }
+
+      .close-btn {
+        background: #c0c0c0;
+        border: 1px solid #000;
+        width: 16px;
+        height: 16px;
+        text-align: center;
+        line-height: 14px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+
+      .content {
+        padding: 15px;
+        background: #f5f5f5;
+        border-top: 2px solid #000;
+        line-height: 1.6;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+
+      .content ul {
+        padding-left: 18px;
+      }
+
+      .content a {
+        color: #000080;
+        text-decoration: underline;
+      }
+
+      /* =========================
+   DESKTOP ICONS
+========================= */
+
+      .icon {
+        position: absolute;
+        color: white;
+        text-align: center;
+        cursor: pointer;
+        width: 80px;
+      }
+
+      .icon div {
+        font-size: 40px;
+      }
+
+      .icon span {
+        font-size: 14px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="desktop" id="desktop">
+      <div
+        class="icon"
+        style="top: 20px; left: 20px"
+        onclick="openWindow('about')"
+      >
+        <div>💾</div>
+        <span>About</span>
+      </div>
+
+      <div
+        class="icon"
+        style="top: 120px; left: 20px"
+        onclick="openWindow('projects')"
+      >
+        <div>📁</div>
+        <span>Projects</span>
+      </div>
+
+      <div
+        class="icon"
+        style="top: 220px; left: 20px"
+        onclick="openWindow('journal')"
+      >
+        <div>📓</div>
+        <span>Journal</span>
+      </div>
+
+      <div
+        class="icon"
+        style="top: 320px; left: 20px"
+        onclick="openWindow('essays')"
+      >
+        <div>📝</div>
+        <span>Essays</span>
+      </div>
+    </div>
+
+    <script>
+      let zIndex = 1;
+
+      /* =========================
+   DATA
+========================= */
+
+      const projects = [
+        {
+          id: "vm",
+          title: "VM Translator (C)",
+          content: `
+        <h3>VM Translator</h3>
+        <p>Implements the Hack VM from Nand2Tetris.</p>
+        <p>Handles stack arithmetic, memory segments, branching, and functions.</p>
+        <p><a href="https://github.com/yourusername/vm-translator" target="_blank">View Repository</a></p>
+        `,
+        },
+        {
+          id: "compiler",
+          title: "Jack Compiler",
+          content: `
+        <h3>Jack Compiler</h3>
+        <p>Tokenizer and compilation engine for the Jack language.</p>
+        <p>Outputs VM code targeting the Hack platform.</p>
+        `,
+        },
+      ];
+
+      const journal = [
+        {
+          id: "inode",
+          title: "What a File Descriptor Really Is",
+          content: `
+        <h3>What a File Descriptor Really Is</h3>
+        <p>A file descriptor is an index into a per-process descriptor table.</p>
+        <p>It is not the inode itself, but references kernel structures.</p>
+        `,
+        },
+        {
+          id: "disk",
+          title: "A Disk Doesn’t Know About Files",
+          content: `
+        <h3>A Disk Doesn’t Know About Files</h3>
+        <p>A disk stores raw bytes.</p>
+        <p>Files, directories, and inodes are abstractions layered by the filesystem.</p>
+        `,
+        },
+      ];
+
+      const essays = [
+        {
+          id: "os",
+          title: "The Magnificence of the Operating System",
+          content: `
+        <h3>The Magnificence of the Operating System</h3>
+        <p>An OS orchestrates CPU, memory, disk, and devices into coherent abstraction.</p>
+        `,
+        },
+      ];
+
+      /* =========================
+   WINDOW SYSTEM
+========================= */
+
+      function createWindow(id, title, contentHTML) {
+        const win = document.createElement("div");
+        win.className = "window";
+        win.id = id;
+        win.style.top = "120px";
+        win.style.left = "200px";
+        win.style.zIndex = ++zIndex;
+
+        win.innerHTML = `
+        <div class="title-bar">
+            <span>${title}</span>
+            <div class="close-btn" onclick="this.parentElement.parentElement.remove()">X</div>
+        </div>
+        <div class="content">
+            ${contentHTML}
+        </div>
+    `;
+
+        document.getElementById("desktop").appendChild(win);
+        makeDraggable(win);
+
+        win.addEventListener("mousedown", () => {
+          win.style.zIndex = ++zIndex;
+        });
+      }
+
+      /* =========================
+   OPEN MAIN WINDOWS
+========================= */
+
+      function openWindow(type) {
+        if (document.getElementById(type)) return;
+
+        if (type === "about") {
+          createWindow(
+            "about",
+            "about.txt",
+            `
+            > Name: Zoowa Omede<br>
+            > Role: Software Engineer<br>
+            > Focus: OS, Compilers, Systems Architecture<br><br>
+            Exploring computers from transistor → kernel → network.
+        `,
+          );
+        }
+
+        if (type === "projects") {
+          createWindow(
+            "projects",
+            "projects.dir",
+            renderList(projects, "project"),
+          );
+        }
+
+        if (type === "journal") {
+          createWindow(
+            "journal",
+            "journal.log",
+            renderList(journal, "journal"),
+          );
+        }
+
+        if (type === "essays") {
+          createWindow("essays", "essays.md", renderList(essays, "essay"));
+        }
+      }
+
+      /* =========================
+   RENDER LIST
+========================= */
+
+      function renderList(items, type) {
+        let html = "<ul>";
+        items.forEach((item) => {
+          html += `
+            <li>
+                <a href="#" onclick="openEntry('${type}', '${item.id}')">
+                    ${item.title}
+                </a>
+            </li>
+        `;
+        });
+        html += "</ul>";
+        return html;
+      }
+
+      /* =========================
+   OPEN ENTRY
+========================= */
+
+      function openEntry(type, id) {
+        let data;
+
+        if (type === "project") data = projects;
+        if (type === "journal") data = journal;
+        if (type === "essay") data = essays;
+
+        const entry = data.find((item) => item.id === id);
+        if (!entry) return;
+
+        const winId = type + "-" + id;
+        if (document.getElementById(winId)) return;
+
+        createWindow(winId, entry.title, entry.content);
+      }
+
+      /* =========================
+   DRAGGING
+========================= */
+
+      function makeDraggable(elmnt) {
+        const titleBar = elmnt.querySelector(".title-bar");
+        let offsetX = 0,
+          offsetY = 0,
+          isDown = false;
+
+        titleBar.addEventListener("mousedown", (e) => {
+          isDown = true;
+          offsetX = e.clientX - elmnt.offsetLeft;
+          offsetY = e.clientY - elmnt.offsetTop;
+        });
+
+        document.addEventListener("mouseup", () => (isDown = false));
+
+        document.addEventListener("mousemove", (e) => {
+          if (!isDown) return;
+          elmnt.style.left = e.clientX - offsetX + "px";
+          elmnt.style.top = e.clientY - offsetY + "px";
+        });
+      }
+    </script>
+  </body>
+</html>
