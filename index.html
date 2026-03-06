@@ -4,333 +4,1886 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>0xzoowa's space</title>
-
+    <link
+      href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap"
+      rel="stylesheet"
+    />
     <style>
-      /* =========================
-   DESKTOP
-========================= */
-
-      body {
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
         margin: 0;
-        background: #008080;
-        font-family: "Courier New", monospace;
+        padding: 0;
+      }
+
+      :root {
+        --teal: #008080;
+        --navy: #000080;
+        --navy-hi: #1084d0;
+        --silver: #c0c0c0;
+        --silver-dark: #808080;
+        --white: #ffffff;
+        --black: #000000;
+        --win-bg: #d4d0c8;
+        --titlebar-h: 28px;
+        --border-light: #ffffff;
+        --border-dark: #808080;
+        --border-darker: #404040;
+        --shadow: rgba(0, 0, 0, 0.4);
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
         overflow: hidden;
       }
 
-      .desktop {
-        width: 100vw;
-        height: 100vh;
+      body {
+        background: #0d1117;
+        font-family: "Share Tech Mono", "Courier New", monospace;
+        font-size: 13px;
         position: relative;
       }
 
-      /* =========================
-   WINDOW
-========================= */
+      /* ── DESKTOP ── */
+      #desktop {
+        width: 100vw;
+        height: 100vh;
+        position: relative;
+        overflow: hidden;
+        background: #0d1117;
+      }
 
-      .window {
+      /* wallpaper canvas sits behind everything */
+      #wallpaper {
         position: absolute;
-        width: 450px;
-        background: #e4e4e4;
-        border: 2px solid #000;
-        box-shadow: 4px 4px 0px #000;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+      }
+      .icon {
+        position: absolute;
+        z-index: 2;
       }
 
-      .title-bar {
-        background: linear-gradient(to right, #000080, #0000cd);
-        color: white;
-        padding: 5px 8px;
-        cursor: move;
+      /* ── TASKBAR ── */
+      #taskbar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 34px;
+        background: var(--silver);
+        border-top: 2px solid var(--border-light);
         display: flex;
-        justify-content: space-between;
         align-items: center;
+        padding: 0 6px;
+        gap: 4px;
+        z-index: 9999;
+        box-shadow: 0 -1px 0 var(--border-dark);
+      }
+
+      #start-btn {
+        background: var(--silver);
+        border-top: 2px solid var(--border-light);
+        border-left: 2px solid var(--border-light);
+        border-bottom: 2px solid var(--border-darker);
+        border-right: 2px solid var(--border-darker);
+        padding: 3px 10px;
+        font-family: "VT323", monospace;
+        font-size: 16px;
         font-weight: bold;
-      }
-
-      .close-btn {
-        background: #c0c0c0;
-        border: 1px solid #000;
-        width: 16px;
-        height: 16px;
-        text-align: center;
-        line-height: 14px;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: var(--black);
+        user-select: none;
+        white-space: nowrap;
+      }
+      #start-btn:active {
+        border-top: 2px solid var(--border-darker);
+        border-left: 2px solid var(--border-darker);
+        border-bottom: 2px solid var(--border-light);
+        border-right: 2px solid var(--border-light);
+      }
+
+      #clock {
+        margin-left: auto;
+        border-top: 2px solid var(--border-dark);
+        border-left: 2px solid var(--border-dark);
+        border-bottom: 2px solid var(--border-light);
+        border-right: 2px solid var(--border-light);
+        padding: 3px 8px;
         font-size: 12px;
+        white-space: nowrap;
       }
 
-      .content {
-        padding: 15px;
-        background: #f5f5f5;
-        border-top: 2px solid #000;
-        line-height: 1.6;
-        max-height: 300px;
-        overflow-y: auto;
+      .taskbar-btn {
+        background: var(--silver);
+        border-top: 2px solid var(--border-light);
+        border-left: 2px solid var(--border-light);
+        border-bottom: 2px solid var(--border-darker);
+        border-right: 2px solid var(--border-darker);
+        padding: 2px 8px;
+        font-family: "Share Tech Mono", monospace;
+        font-size: 11px;
+        cursor: pointer;
+        max-width: 140px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--black);
+      }
+      .taskbar-btn.active {
+        border-top: 2px solid var(--border-darker);
+        border-left: 2px solid var(--border-darker);
+        border-bottom: 2px solid var(--border-light);
+        border-right: 2px solid var(--border-light);
+        background: var(--silver-dark);
+        color: var(--white);
       }
 
-      .content ul {
-        padding-left: 18px;
-      }
-
-      .content a {
-        color: #000080;
-        text-decoration: underline;
-      }
-
-      /* =========================
-   DESKTOP ICONS
-========================= */
-
+      /* ── DESKTOP ICONS ── */
       .icon {
         position: absolute;
         color: white;
         text-align: center;
-        cursor: pointer;
-        width: 80px;
+        cursor: grab;
+        width: 72px;
+        padding: 4px;
+        border: 2px solid transparent;
+        border-radius: 2px;
+        transition:
+          border-color 0.1s,
+          box-shadow 0.1s;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: none;
+      }
+      .icon:hover {
+        border-color: rgba(255, 255, 255, 0.45);
+      }
+      .icon:focus {
+        outline: none;
+        border-color: rgba(255, 255, 255, 0.5);
+      }
+      .icon.selected {
+        background: rgba(0, 0, 128, 0.45);
+        border-color: rgba(255, 255, 255, 0.75);
+      }
+      .icon.dragging {
+        cursor: grabbing;
+        opacity: 0.85;
+        box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.5);
+        z-index: 8000 !important;
       }
 
-      .icon div {
-        font-size: 40px;
+      /* SVG C badge */
+      .icon .ico-wrap {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 4px;
+        position: relative;
+      }
+      .icon .ico-wrap svg {
+        width: 48px;
+        height: 48px;
+        filter: drop-shadow(1px 2px 3px rgba(0, 0, 0, 0.55));
+      }
+      /* tiny emoji badge bottom-right */
+      .icon .ico-badge {
+        position: absolute;
+        bottom: -2px;
+        right: -4px;
+        font-size: 16px;
+        line-height: 1;
+        filter: drop-shadow(0 1px 2px #000);
       }
 
       .icon span {
+        font-family: "VT323", monospace;
         font-size: 14px;
+        display: block;
+        text-shadow: 1px 1px 2px #000;
+        word-break: break-word;
+        line-height: 1.2;
+      }
+
+      /* ── WINDOW ── */
+      .window {
+        position: absolute;
+        background: var(--win-bg);
+        border-top: 2px solid var(--border-light);
+        border-left: 2px solid var(--border-light);
+        border-bottom: 2px solid var(--border-darker);
+        border-right: 2px solid var(--border-darker);
+        min-width: 280px;
+        max-width: calc(100vw - 20px);
+        display: flex;
+        flex-direction: column;
+        box-shadow: 4px 4px 0 var(--shadow);
+      }
+
+      .title-bar {
+        background: linear-gradient(to right, var(--navy), var(--navy-hi));
+        color: var(--white);
+        padding: 4px 6px;
+        cursor: move;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 6px;
+        min-height: var(--titlebar-h);
+        flex-shrink: 0;
+        user-select: none;
+        -webkit-touch-callout: none;
+      }
+
+      .title-bar .title-text {
+        font-family: "VT323", monospace;
+        font-size: 16px;
+        letter-spacing: 0.5px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        flex: 1;
+      }
+
+      .title-bar .win-btns {
+        display: flex;
+        gap: 3px;
+        flex-shrink: 0;
+      }
+
+      .win-btn {
+        background: var(--silver);
+        border-top: 2px solid var(--border-light);
+        border-left: 2px solid var(--border-light);
+        border-bottom: 2px solid var(--border-darker);
+        border-right: 2px solid var(--border-darker);
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 11px;
+        color: var(--black);
+        font-weight: bold;
+        flex-shrink: 0;
+        line-height: 1;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .win-btn:active {
+        border-top: 2px solid var(--border-darker);
+        border-left: 2px solid var(--border-darker);
+        border-bottom: 2px solid var(--border-light);
+        border-right: 2px solid var(--border-light);
+      }
+
+      .window-body {
+        border-top: 2px solid var(--border-dark);
+        border-left: 2px solid var(--border-dark);
+        border-bottom: 1px solid var(--border-light);
+        border-right: 1px solid var(--border-light);
+        margin: 2px;
+        background: #f5f4ef;
+        overflow-y: auto;
+        flex: 1;
+      }
+
+      .content {
+        padding: 14px 16px;
+        line-height: 1.7;
+        color: #111;
+      }
+
+      .content h3 {
+        font-family: "VT323", monospace;
+        font-size: 20px;
+        margin-bottom: 8px;
+        color: var(--navy);
+        border-bottom: 1px solid var(--silver-dark);
+        padding-bottom: 4px;
+      }
+
+      .content p {
+        margin-bottom: 8px;
+        font-size: 13px;
+      }
+      .content ul {
+        padding-left: 20px;
+      }
+      .content li {
+        margin-bottom: 6px;
+      }
+
+      .content a {
+        color: var(--navy);
+        text-decoration: underline;
+        cursor: pointer;
+      }
+      .content a:hover {
+        color: #0000ff;
+      }
+
+      /* prompt-style about */
+      .prompt-line {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-bottom: 5px;
+        font-size: 13px;
+      }
+      .prompt-line .label {
+        color: #008080;
+        font-weight: bold;
+      }
+      .prompt-line .val {
+        color: #111;
+      }
+
+      .prompt-footer {
+        margin-top: 12px;
+        font-size: 12px;
+        color: #555;
+        border-top: 1px dashed var(--silver-dark);
+        padding-top: 8px;
+      }
+
+      /* resize handle */
+      .resize-handle {
+        width: 14px;
+        height: 14px;
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        cursor: se-resize;
+        background: var(--win-bg);
+        border-top: 1px solid var(--border-dark);
+        border-left: 1px solid var(--border-dark);
+      }
+      .resize-handle::after {
+        content: "";
+        display: block;
+        width: 10px;
+        height: 10px;
+        background: repeating-linear-gradient(
+          -45deg,
+          var(--border-dark),
+          var(--border-dark) 1px,
+          transparent 1px,
+          transparent 3px
+        );
+        margin: 2px;
+      }
+
+      /* ── MOBILE DRAWER (bottom sheet) ── */
+      @media (max-width: 600px) {
+        .window {
+          position: fixed !important;
+          left: 0 !important;
+          right: 0 !important;
+          bottom: 34px !important;
+          top: auto !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          max-height: 70vh;
+          border-radius: 0;
+          box-shadow: 0 -4px 16px var(--shadow);
+          transform: translateY(100%);
+          transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          z-index: 100;
+        }
+        .window.open {
+          transform: translateY(0);
+        }
+        .window .resize-handle {
+          display: none;
+        }
+        .title-bar {
+          cursor: default;
+        }
+        .window-body {
+          max-height: calc(70vh - var(--titlebar-h) - 8px);
+        }
+
+        .icon {
+          width: 60px;
+        }
+        .icon .ico {
+          font-size: 30px;
+        }
+        .icon span {
+          font-size: 12px;
+        }
+
+        #taskbar {
+          height: 40px;
+        }
+        .taskbar-btn {
+          max-width: 100px;
+          font-size: 10px;
+        }
+      }
+
+      /* Minimized state */
+      .window.minimized {
+        display: none;
+      }
+
+      /* ── START MENU ── */
+      #start-menu {
+        position: fixed;
+        bottom: 34px;
+        left: 0;
+        width: 240px;
+        background: var(--silver);
+        border-top: 2px solid var(--border-light);
+        border-left: 2px solid var(--border-light);
+        border-right: 2px solid var(--border-darker);
+        border-bottom: 2px solid var(--border-darker);
+        box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.4);
+        z-index: 99999;
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+        transform-origin: bottom left;
+      }
+      #start-menu.open {
+        display: flex;
+        animation: menuPop 0.12s ease-out;
+      }
+      @keyframes menuPop {
+        from {
+          opacity: 0;
+          transform: scaleY(0.88);
+        }
+        to {
+          opacity: 1;
+          transform: scaleY(1);
+        }
+      }
+
+      #start-menu .sm-sidebar {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 28px;
+        background: linear-gradient(to top, var(--navy), #1a50a0);
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding-bottom: 6px;
+      }
+      #start-menu .sm-sidebar span {
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        font-family: "VT323", monospace;
+        font-size: 17px;
+        color: rgba(255, 255, 255, 0.5);
+        letter-spacing: 2px;
+        user-select: none;
+      }
+
+      #start-menu .sm-items {
+        margin-left: 28px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .sm-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 7px 12px;
+        cursor: pointer;
+        font-family: "Share Tech Mono", monospace;
+        font-size: 13px;
+        color: var(--black);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        white-space: nowrap;
+        user-select: none;
+      }
+      .sm-item:hover,
+      .sm-item:focus {
+        background: var(--navy);
+        color: white;
+        outline: none;
+      }
+      .sm-item .sm-ico {
+        font-size: 18px;
+        width: 22px;
+        text-align: center;
+        flex-shrink: 0;
+      }
+      .sm-divider {
+        height: 1px;
+        background: var(--border-dark);
+        margin: 3px 6px;
+        flex-shrink: 0;
+      }
+      .sm-item.sm-shutdown {
+        border-top: 2px solid var(--border-dark);
+        border-bottom: none;
+      }
+
+      /* Selection highlight */
+      ::selection {
+        background: var(--navy);
+        color: white;
       }
     </style>
   </head>
-
   <body>
-    <div class="desktop" id="desktop">
+    <div id="desktop">
+      <canvas id="wallpaper"></canvas>
+
+      <!-- Icons: default C-shape layout, draggable -->
       <div
         class="icon"
-        style="top: 20px; left: 20px"
-        onclick="openWindow('about')"
+        id="icon-about"
+        data-target="about"
+        style="top: 20px; left: 16px"
+        tabindex="0"
       >
-        <div>💾</div>
+        <div class="ico-wrap">
+          <svg
+            viewBox="0 0 48 48"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M38 12 A18 18 0 1 0 38 36"
+              stroke="#c8e6ff"
+              stroke-width="9"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <path
+              d="M38 12 A18 18 0 1 0 38 36"
+              stroke="#1a6fd4"
+              stroke-width="5.5"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <path
+              d="M38 12 A18 18 0 1 0 38 36"
+              stroke="#5bb8ff"
+              stroke-width="2"
+              stroke-linecap="round"
+              fill="none"
+              opacity="0.6"
+            />
+          </svg>
+          <span class="ico-badge">💾</span>
+        </div>
         <span>About</span>
       </div>
 
       <div
         class="icon"
-        style="top: 120px; left: 20px"
-        onclick="openWindow('projects')"
+        id="icon-projects"
+        data-target="projects"
+        style="top: 120px; left: 16px"
+        tabindex="0"
       >
-        <div>📁</div>
+        <div class="ico-wrap">
+          <svg
+            viewBox="0 0 48 48"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M38 12 A18 18 0 1 0 38 36"
+              stroke="#ffd9a0"
+              stroke-width="9"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <path
+              d="M38 12 A18 18 0 1 0 38 36"
+              stroke="#d48a1a"
+              stroke-width="5.5"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <path
+              d="M38 12 A18 18 0 1 0 38 36"
+              stroke="#ffe08a"
+              stroke-width="2"
+              stroke-linecap="round"
+              fill="none"
+              opacity="0.6"
+            />
+          </svg>
+          <span class="ico-badge">📁</span>
+        </div>
         <span>Projects</span>
       </div>
 
       <div
         class="icon"
-        style="top: 220px; left: 20px"
-        onclick="openWindow('journal')"
+        id="icon-journal"
+        data-target="journal"
+        style="top: 220px; left: 16px"
+        tabindex="0"
       >
-        <div>📓</div>
+        <div class="ico-wrap">
+          <svg
+            viewBox="0 0 48 48"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M38 12 A18 18 0 1 0 38 36"
+              stroke="#c8ffd4"
+              stroke-width="9"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <path
+              d="M38 12 A18 18 0 1 0 38 36"
+              stroke="#1a8c3c"
+              stroke-width="5.5"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <path
+              d="M38 12 A18 18 0 1 0 38 36"
+              stroke="#6effa0"
+              stroke-width="2"
+              stroke-linecap="round"
+              fill="none"
+              opacity="0.6"
+            />
+          </svg>
+          <span class="ico-badge">📓</span>
+        </div>
         <span>Journal</span>
       </div>
 
       <div
         class="icon"
-        style="top: 320px; left: 20px"
-        onclick="openWindow('essays')"
+        id="icon-essays"
+        data-target="essays"
+        style="top: 320px; left: 16px"
+        tabindex="0"
       >
-        <div>📝</div>
+        <div class="ico-wrap">
+          <svg
+            viewBox="0 0 48 48"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M38 12 A18 18 0 1 0 38 36"
+              stroke="#f5c8ff"
+              stroke-width="9"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <path
+              d="M38 12 A18 18 0 1 0 38 36"
+              stroke="#8a1ad4"
+              stroke-width="5.5"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <path
+              d="M38 12 A18 18 0 1 0 38 36"
+              stroke="#d48aff"
+              stroke-width="2"
+              stroke-linecap="round"
+              fill="none"
+              opacity="0.6"
+            />
+          </svg>
+          <span class="ico-badge">📝</span>
+        </div>
         <span>Essays</span>
       </div>
     </div>
 
+    <!-- START MENU -->
+    <div id="start-menu">
+      <div class="sm-sidebar"><span>0xzoowa</span></div>
+      <div class="sm-items">
+        <div class="sm-item" tabindex="0" onclick="smOpen('about')">
+          <span class="sm-ico">💾</span> About
+        </div>
+        <div class="sm-item" tabindex="0" onclick="smOpen('projects')">
+          <span class="sm-ico">📁</span> Projects
+        </div>
+        <div class="sm-item" tabindex="0" onclick="smOpen('journal')">
+          <span class="sm-ico">📓</span> Journal
+        </div>
+        <div class="sm-item" tabindex="0" onclick="smOpen('essays')">
+          <span class="sm-ico">📝</span> Essays
+        </div>
+        <div class="sm-divider"></div>
+        <div class="sm-item" tabindex="0" onclick="smGithub()">
+          <span class="sm-ico">🔗</span> GitHub
+        </div>
+        <div class="sm-divider"></div>
+        <div class="sm-item sm-shutdown" tabindex="0" onclick="smShutdown()">
+          <span class="sm-ico">⏻</span> Shut Down…
+        </div>
+      </div>
+    </div>
+
+    <!-- TASKBAR -->
+    <div id="taskbar">
+      <button id="start-btn">⊞ Start</button>
+      <div
+        id="taskbar-items"
+        style="display: flex; gap: 4px; flex: 1; overflow: hidden"
+      ></div>
+      <div id="clock"></div>
+    </div>
+
     <script>
-      let zIndex = 1;
+      /* =========================================================
+   START MENU
+========================================================= */
+      const startMenu = document.getElementById("start-menu");
+      const startBtn = document.getElementById("start-btn");
 
-      /* =========================
-   DATA
-========================= */
+      function toggleStartMenu(e) {
+        e.stopPropagation();
+        startMenu.classList.toggle("open");
+        startBtn.classList.toggle("active");
+      }
+      function closeStartMenu() {
+        startMenu.classList.remove("open");
+        startBtn.classList.remove("active");
+      }
+      startBtn.addEventListener("click", toggleStartMenu);
+      document.addEventListener("click", (e) => {
+        if (!startMenu.contains(e.target) && e.target !== startBtn)
+          closeStartMenu();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeStartMenu();
+      });
 
-      const projects = [
-        {
-          id: "vm",
-          title: "VM Translator (C)",
-          content: `
-        <h3>VM Translator</h3>
-        <p>Implements the Hack VM from Nand2Tetris.</p>
-        <p>Handles stack arithmetic, memory segments, branching, and functions.</p>
-        <p><a href="https://github.com/yourusername/vm-translator" target="_blank">View Repository</a></p>
-        `,
+      function smOpen(type) {
+        closeStartMenu();
+        openWindow(type);
+      }
+      function smGithub() {
+        closeStartMenu();
+        window.open("https://github.com/0xzoowa", "_blank");
+      }
+      function smShutdown() {
+        closeStartMenu();
+        document.body.style.transition = "opacity 0.6s";
+        document.body.style.opacity = "0";
+        setTimeout(() => {
+          document.body.innerHTML = `<div style="
+      background:#000;width:100vw;height:100vh;
+      display:flex;align-items:center;justify-content:center;
+      font-family:'VT323',monospace;font-size:24px;color:#c0c0c0;
+      flex-direction:column;gap:12px;">
+      <div>It is now safe to turn off your computer.</div>
+      <div style="font-size:14px;opacity:0.45;font-family:'Share Tech Mono',monospace">(refresh to reboot)</div>
+    </div>`;
+          document.body.style.opacity = "1";
+        }, 600);
+      }
+
+      /* =========================================================
+   DATA — edit anything here, links are fully dynamic
+========================================================= */
+      const DATA = {
+        about: {
+          title: "about.txt",
+          icon: "💾",
+          content: () => `
+      <div class="content">
+        <h3>C:\\Users\\zoowa> whoami</h3>
+        <div class="prompt-line"><span class="label">name:</span><span class="val">Omozuwa Omede</span></div>
+        <div class="prompt-line"><span class="label">costume:</span><span class="val">Backend Engineer</span></div>
+        <div class="prompt-line"><span class="label">focus:</span><span class="val">OS ·  Systems Architecture · Startups</span></div>
+        <div class="prompt-line"><span class="label">stack:</span><span class="val">C · Assembly · C# · Javascript</span></div>
+        <div class="prompt-footer">
+         I am a builder. Builders don’t think in roles. They think in outcomes. They think in systems.
+					The role is just the costume you wear to get the work done. And over the course of a building journey, you wear many costumes.
+
+        </div>
+        <div class="prompt-footer">
+       Current preoccupation: Exploring computers from first principles.<br>
+        </div>
+      </div>`,
         },
-        {
-          id: "compiler",
-          title: "Jack Compiler",
-          content: `
-        <h3>Jack Compiler</h3>
-        <p>Tokenizer and compilation engine for the Jack language.</p>
-        <p>Outputs VM code targeting the Hack platform.</p>
-        `,
-        },
-      ];
 
-      const journal = [
-        {
-          id: "inode",
-          title: "What a File Descriptor Really Is",
-          content: `
-        <h3>What a File Descriptor Really Is</h3>
-        <p>A file descriptor is an index into a per-process descriptor table.</p>
-        <p>It is not the inode itself, but references kernel structures.</p>
-        `,
-        },
-        {
-          id: "disk",
-          title: "A Disk Doesn’t Know About Files",
-          content: `
-        <h3>A Disk Doesn’t Know About Files</h3>
-        <p>A disk stores raw bytes.</p>
-        <p>Files, directories, and inodes are abstractions layered by the filesystem.</p>
-        `,
-        },
-      ];
+        projects: {
+          title: "projects.dir",
+          icon: "📁",
+          items: [
+            {
+              id: "compiler",
+              title: "Jack Compiler",
+              content: `<h3>Jack Compiler</h3>
+  <p>Front-end compiler for the Jack programming language from Nand2Tetris.
+  Implements lexical analysis, parsing, and code generation to translate high-level Jack programs into stack-based VM instructions.</p>
 
-      const essays = [
-        {
-          id: "os",
-          title: "The Magnificence of the Operating System",
-          content: `
-        <h3>The Magnificence of the Operating System</h3>
-        <p>An OS orchestrates CPU, memory, disk, and devices into coherent abstraction.</p>
-        `,
+  <pre><code>// Jack source
+let x = y + 2;
+</code></pre>
+
+  <pre><code>// Generated VM code
+push local 1
+push constant 2
+add
+pop local 0
+</code></pre>
+
+  <p>The generated VM code targets the Hack Virtual Machine, implemented in the companion VM Translator project.</p>
+  <p><a href="https://github.com/0xzoowa/JackCompiler" target="_blank">→ View Repository</a></p>`,
+            },
+
+            {
+              id: "vm",
+              title: "VM Translator (C)",
+              content: `<h3>VM Translator</h3>
+  <p>Implements the Hack Virtual Machine specified in Nand2Tetris.
+  Translates stack-based VM instructions into Hack assembly while managing the stack, memory segments, branching, and function calls.</p>
+
+  <pre><code>// VM instruction
+push constant 7
+push constant 8
+add
+</code></pre>
+
+  <pre><code>// Generated Hack assembly
+@7
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1
+...
+</code></pre>
+
+  <p>The resulting assembly program targets the Hack architecture and is assembled into machine code by the Hack Assembler.</p>
+  <p><a href="https://github.com/0xzoowa/virtual-machine" target="_blank">→ View Repository</a></p>`,
+            },
+
+            {
+              id: "assembler",
+              title: "Hack Assembler",
+              content: `<h3>Hack Assembler</h3>
+  <p>Assembler for the Hack computer platform. Converts Hack assembly instructions into 16-bit machine code executable by the Hack CPU.</p>
+
+  <pre><code>// Hack assembly
+@2
+D=A
+</code></pre>
+
+  <pre><code>// Machine code
+0000000000000010
+1110110000010000
+</code></pre>
+
+  <p>Implements a two-pass translation process with symbol resolution for labels, variables, and predefined registers.</p>
+  <p><a href="https://github.com/0xzoowa/hack-assembler" target="_blank">→ View Repository</a></p>`,
+            },
+          ],
         },
-      ];
 
-      /* =========================
-   WINDOW SYSTEM
-========================= */
+        journal: {
+          title: "journal.log",
+          icon: "📓",
+          items: [
+            {
+              id: "inode",
+              title: "What a File Descriptor Really Is",
+              content: `<h3>What a File Descriptor Really Is</h3>
+          <p>A file descriptor is an index into a per-process open-file table. It is not the inode itself — it references kernel structures that point to the inode.</p>
+          <p>When you call <code>open()</code>, the kernel allocates a file description object, inserts it into the system-wide file table, then returns an fd (integer) that indexes into your process's descriptor table.</p>`,
+            },
+            {
+              id: "disk",
+              title: "A Disk Doesn't Know About Files",
+              content: `<h3>A Disk Doesn't Know About Files</h3>
+          <p>A disk stores raw bytes in numbered sectors. Files, directories, and inodes are abstractions entirely invented by the filesystem layer sitting above the block device.</p>
+          <p>The OS translates <code>read(fd, buf, n)</code> into LBA sector reads — the disk just answers "give me block 14203".</p>`,
+            },
+            {
+              id: "mmap",
+              title: "mmap and the Page Cache",
+              content: `<h3>mmap and the Page Cache</h3>
+          <p><code>mmap()</code> maps a file into virtual address space. Reads hit the page cache; writes are lazy — the OS decides when to flush them to disk.</p>
+          <p>This is why <code>mmap</code> can outperform <code>read()</code>: you skip the kernel-to-user copy entirely.</p>`,
+            },
+          ],
+        },
 
-      function createWindow(id, title, contentHTML) {
+        essays: {
+          title: "essays.md",
+          icon: "📝",
+          items: [
+            {
+              id: "compilation",
+              title: "From Code to Machine",
+              content: `
+              <p><em>Engineering Notes — July, 2025</em></p>
+              <h3>From High-Level Code to Machine Instructions</h3>
+
+  <h4>1. The Compiler — Translating High-Level Intent</h4>
+
+  <p>The first stage of the pipeline is the Jack compiler.</p>
+
+  <p>Jack is a small high-level language designed for the Nand2Tetris course. It resembles languages like Java or C but is intentionally simplified so that its entire compiler can be implemented by a single developer.</p>
+
+  <p>At a high level, the compiler performs three tasks:</p>
+
+  <p><strong>Lexical Analysis (Tokenization)</strong><br>
+  The compiler reads the raw source code and breaks it into tokens: keywords, identifiers, symbols, constants, and strings.</p>
+
+  <p><strong>Parsing (Syntax Analysis)</strong><br>
+  These tokens are checked against the grammar of the language to ensure the program is syntactically valid.</p>
+
+  <p><strong>Code Generation</strong><br>
+  Instead of producing machine code directly, the compiler outputs VM instructions targeting a stack-based virtual machine.</p>
+
+  <p>For example, a simple Jack statement like this:</p>
+
+  <pre><code>let x = y + 2;</code></pre>
+
+  <p>might produce the following VM instructions:</p>
+
+  <pre><code>push local 1
+push constant 2
+add
+pop local 0</code></pre>
+
+  <p>At first glance, this output may look strange. Why introduce a virtual machine layer instead of compiling directly to hardware instructions?</p>
+
+  <p>The answer becomes clearer in the next stage.</p>
+
+
+  <h4>2. The Virtual Machine — A Portable Execution Model</h4>
+
+  <p>The VM Translator sits between the high-level language and the target hardware.</p>
+
+  <p>Instead of generating machine code directly, the compiler targets a stack-based virtual machine abstraction. The VM provides a standardized instruction set that represents common programming constructs such as arithmetic operations, memory access, branching, and function calls.</p>
+
+  <p>For example:</p>
+
+  <pre><code>push constant 7
+push constant 8
+add</code></pre>
+
+  <p>This sequence expresses a computation independent of any specific CPU architecture.</p>
+
+  <p>The VM translator then converts these instructions into Hack assembly, which directly manipulates the Hack computer’s memory and stack.</p>
+
+  <p>A simplified translation might look like this:</p>
+
+  <pre><code>@7
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1</code></pre>
+
+  <p>This stage was particularly illuminating for me because it revealed how many high-level operations ultimately reduce to simple stack manipulations and memory operations.</p>
+
+  <p>Function calls, variable storage, and arithmetic all boil down to carefully orchestrated changes to memory.</p>
+
+  <p>However, the output of this stage is still assembly, which is readable by humans but not by the processor itself.</p>
+
+  <p>That leads to the final step.</p>
+
+
+  <h4>3. The Assembler — Converting Symbols to Binary</h4>
+
+  <p>The assembler translates Hack assembly into 16-bit machine instructions that the Hack CPU can execute.</p>
+
+  <p>For example:</p>
+
+  <pre><code>@2
+D=A</code></pre>
+
+  <p>becomes:</p>
+
+  <pre><code>0000000000000010
+1110110000010000</code></pre>
+
+  <p>Unlike assembly code, which uses symbolic names and readable mnemonics, machine code is simply a sequence of binary instructions understood by the processor’s hardware circuits.</p>
+
+  <p>Implementing the assembler required solving a subtle problem: symbol resolution.</p>
+
+  <p>Assembly programs often contain labels and variables:</p>
+
+  <pre><code>(LOOP)
+@i
+M=M+1
+@LOOP
+0;JMP</code></pre>
+
+  <p>To handle these, the assembler performs a two-pass translation process:</p>
+
+  <p>First pass: record the locations of labels.<br>
+  Second pass: translate instructions and assign memory addresses to variables.</p>
+
+  <p>This step finally produces a <code>.hack</code> file — pure binary instructions ready to run on the Hack computer.</p>
+
+
+  <h4>Putting It All Together</h4>
+
+  <p>Viewed as a pipeline, the entire process looks like this:</p>
+
+  <pre><code>Jack Source Code (.jack)
+        ↓
+Jack Compiler
+        ↓
+Virtual Machine Code (.vm)
+        ↓
+VM Translator
+        ↓
+Hack Assembly (.asm)
+        ↓
+Assembler
+        ↓
+Machine Code (.hack)</code></pre>
+
+  <p>Each stage removes a layer of abstraction and moves the program closer to the hardware.</p>
+
+  <p>What begins as expressive, human-readable code eventually becomes a sequence of binary instructions that manipulate registers, memory, and the stack.</p>
+
+
+  <h4>Open Questions and Future Exploration</h4>
+
+  <p>While implementing these tools clarified many aspects of compilation, it also raised new questions that point toward deeper areas of study.</p>
+
+  <p>For example:</p>
+
+  <p>
+  • How do real-world compilers like those for C or Rust optimize the generated code?<br>
+  • How are register allocation and instruction scheduling handled on modern CPUs?<br>
+  • How do linkers combine multiple compiled files into a single executable?<br>
+  • How does the operating system load that executable into memory and start execution?
+  </p>
+
+  <p>The Nand2Tetris toolchain is intentionally minimal, but it reveals the core ideas underlying real systems.</p>
+
+  <p>Understanding this pipeline transformed compilation from something mysterious into a sequence of understandable transformations.</p>`,
+            },
+          ],
+        },
+      };
+
+      /* =========================================================
+   WINDOW MANAGER
+========================================================= */
+      let zTop = 10;
+      const openWindows = {}; // id -> { el, minimized, title }
+      const isMobile = () => window.innerWidth <= 600;
+
+      function buildWindow(id, title, bodyHTML, width = 460, height = 320) {
         const win = document.createElement("div");
         win.className = "window";
-        win.id = id;
-        win.style.top = "120px";
-        win.style.left = "200px";
-        win.style.zIndex = ++zIndex;
+        win.id = "win-" + id;
+
+        // Desktop positioning — cascade
+        const offset = (Object.keys(openWindows).length % 6) * 22;
+        if (!isMobile()) {
+          win.style.width = Math.min(width, window.innerWidth - 20) + "px";
+          win.style.left = 120 + offset + "px";
+          win.style.top = 80 + offset + "px";
+        }
+        win.style.zIndex = ++zTop;
 
         win.innerHTML = `
-        <div class="title-bar">
-            <span>${title}</span>
-            <div class="close-btn" onclick="this.parentElement.parentElement.remove()">X</div>
-        </div>
-        <div class="content">
-            ${contentHTML}
-        </div>
-    `;
+    <div class="title-bar">
+      <span class="title-text">${title}</span>
+      <div class="win-btns">
+        <div class="win-btn" title="Minimize" onclick="minimizeWindow('${id}')">_</div>
+        <div class="win-btn" title="Maximize" onclick="maximizeWindow('${id}')">□</div>
+        <div class="win-btn" title="Close" onclick="closeWindow('${id}')">✕</div>
+      </div>
+    </div>
+    <div class="window-body" style="${!isMobile() ? "max-height:" + height + "px" : ""}">
+      ${bodyHTML}
+    </div>
+    <div class="resize-handle" data-win="${id}"></div>
+  `;
 
         document.getElementById("desktop").appendChild(win);
-        makeDraggable(win);
 
-        win.addEventListener("mousedown", () => {
-          win.style.zIndex = ++zIndex;
-        });
+        if (isMobile()) {
+          // trigger transition next frame
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => win.classList.add("open")),
+          );
+        }
+
+        makeInteractive(win, id);
+        return win;
       }
-
-      /* =========================
-   OPEN MAIN WINDOWS
-========================= */
 
       function openWindow(type) {
-        if (document.getElementById(type)) return;
+        const cfg = DATA[type];
+        if (!cfg) return;
+        const id = type;
 
-        if (type === "about") {
-          createWindow(
-            "about",
-            "about.txt",
-            `
-            > Name: Zoowa Omede<br>
-            > Role: Software Engineer<br>
-            > Focus: OS, Compilers, Systems Architecture<br><br>
-            Exploring computers from transistor → kernel → network.
-        `,
-          );
+        if (openWindows[id]) {
+          if (openWindows[id].minimized) restoreWindow(id);
+          focusWindow(id);
+          return;
         }
 
-        if (type === "projects") {
-          createWindow(
-            "projects",
-            "projects.dir",
-            renderList(projects, "project"),
-          );
+        let bodyHTML;
+        if (cfg.content) {
+          bodyHTML = cfg.content();
+        } else {
+          bodyHTML = renderList(cfg.items, type);
         }
 
-        if (type === "journal") {
-          createWindow(
-            "journal",
-            "journal.log",
-            renderList(journal, "journal"),
-          );
+        const win = buildWindow(
+          id,
+          cfg.title,
+          `<div class="content">${bodyHTML}</div>`,
+        );
+        openWindows[id] = { el: win, minimized: false, title: cfg.title };
+        addTaskbarBtn(id, cfg.icon + " " + cfg.title);
+      }
+
+      function openEntry(type, itemId) {
+        const cfg = DATA[type];
+        if (!cfg || !cfg.items) return;
+        const item = cfg.items.find((i) => i.id === itemId);
+        if (!item) return;
+
+        const id = type + "-" + itemId;
+        if (openWindows[id]) {
+          restoreWindow(id);
+          focusWindow(id);
+          return;
         }
 
-        if (type === "essays") {
-          createWindow("essays", "essays.md", renderList(essays, "essay"));
+        const win = buildWindow(
+          id,
+          item.title,
+          `<div class="content">${item.content}</div>`,
+          440,
+          280,
+        );
+        const icon = DATA[type].icon;
+        openWindows[id] = { el: win, minimized: false, title: item.title };
+        addTaskbarBtn(id, icon + " " + item.title);
+      }
+
+      function closeWindow(id) {
+        const w = openWindows[id];
+        if (!w) return;
+        const el = w.el;
+        if (isMobile()) {
+          el.classList.remove("open");
+          el.addEventListener("transitionend", () => el.remove(), {
+            once: true,
+          });
+        } else {
+          el.remove();
+        }
+        delete openWindows[id];
+        removeTaskbarBtn(id);
+      }
+
+      function minimizeWindow(id) {
+        const w = openWindows[id];
+        if (!w) return;
+        w.el.classList.add("minimized");
+        w.minimized = true;
+        updateTaskbarBtn(id, false);
+      }
+
+      function restoreWindow(id) {
+        const w = openWindows[id];
+        if (!w) return;
+        w.el.classList.remove("minimized");
+        w.minimized = false;
+        updateTaskbarBtn(id, true);
+        if (isMobile()) {
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => w.el.classList.add("open")),
+          );
         }
       }
 
-      /* =========================
-   RENDER LIST
-========================= */
+      let maximizedWin = null;
+      function maximizeWindow(id) {
+        const w = openWindows[id];
+        if (!w) return;
+        const el = w.el;
+        if (w.maximized) {
+          // restore
+          Object.assign(el.style, w._savedStyle);
+          w.maximized = false;
+        } else {
+          w._savedStyle = {
+            left: el.style.left,
+            top: el.style.top,
+            width: el.style.width,
+          };
+          el.style.left = "0";
+          el.style.top = "0";
+          el.style.width = "100vw";
+          el.querySelector(".window-body").style.maxHeight =
+            window.innerHeight - 34 - 30 + "px";
+          w.maximized = true;
+        }
+        focusWindow(id);
+      }
 
+      function focusWindow(id) {
+        const w = openWindows[id];
+        if (!w) return;
+        w.el.style.zIndex = ++zTop;
+      }
+
+      /* =========================================================
+   RENDER HELPERS
+========================================================= */
       function renderList(items, type) {
-        let html = "<ul>";
-        items.forEach((item) => {
-          html += `
-            <li>
-                <a href="#" onclick="openEntry('${type}', '${item.id}')">
-                    ${item.title}
-                </a>
-            </li>
-        `;
-        });
-        html += "</ul>";
-        return html;
+        return `<ul>${items
+          .map(
+            (item) =>
+              `<li><a href="#" onclick="event.preventDefault();openEntry('${type}','${item.id}')">${item.title}</a></li>`,
+          )
+          .join("")}</ul>`;
       }
 
-      /* =========================
-   OPEN ENTRY
-========================= */
-
-      function openEntry(type, id) {
-        let data;
-
-        if (type === "project") data = projects;
-        if (type === "journal") data = journal;
-        if (type === "essay") data = essays;
-
-        const entry = data.find((item) => item.id === id);
-        if (!entry) return;
-
-        const winId = type + "-" + id;
-        if (document.getElementById(winId)) return;
-
-        createWindow(winId, entry.title, entry.content);
+      /* =========================================================
+   TASKBAR
+========================================================= */
+      function addTaskbarBtn(id, label) {
+        const btn = document.createElement("button");
+        btn.className = "taskbar-btn active";
+        btn.id = "tbtn-" + id;
+        btn.textContent = label;
+        btn.onclick = () => {
+          const w = openWindows[id];
+          if (!w) return;
+          if (w.minimized) {
+            restoreWindow(id);
+            focusWindow(id);
+          } else if (parseInt(w.el.style.zIndex) === zTop) {
+            minimizeWindow(id);
+          } else {
+            focusWindow(id);
+          }
+        };
+        document.getElementById("taskbar-items").appendChild(btn);
       }
 
-      /* =========================
-   DRAGGING
-========================= */
+      function removeTaskbarBtn(id) {
+        const btn = document.getElementById("tbtn-" + id);
+        if (btn) btn.remove();
+      }
 
-      function makeDraggable(elmnt) {
-        const titleBar = elmnt.querySelector(".title-bar");
-        let offsetX = 0,
-          offsetY = 0,
-          isDown = false;
+      function updateTaskbarBtn(id, active) {
+        const btn = document.getElementById("tbtn-" + id);
+        if (!btn) return;
+        btn.classList.toggle("active", active);
+      }
 
-        titleBar.addEventListener("mousedown", (e) => {
-          isDown = true;
-          offsetX = e.clientX - elmnt.offsetLeft;
-          offsetY = e.clientY - elmnt.offsetTop;
+      /* =========================================================
+   DRAGGING (desktop only)
+========================================================= */
+      function makeInteractive(win, id) {
+        win.addEventListener("mousedown", () => focusWindow(id));
+        win.addEventListener("touchstart", () => focusWindow(id), {
+          passive: true,
         });
 
-        document.addEventListener("mouseup", () => (isDown = false));
+        if (isMobile()) return;
+
+        const bar = win.querySelector(".title-bar");
+        let ox = 0,
+          oy = 0,
+          dragging = false;
+
+        bar.addEventListener("mousedown", (e) => {
+          if (e.target.classList.contains("win-btn")) return;
+          dragging = true;
+          ox = e.clientX - win.offsetLeft;
+          oy = e.clientY - win.offsetTop;
+          e.preventDefault();
+        });
 
         document.addEventListener("mousemove", (e) => {
-          if (!isDown) return;
-          elmnt.style.left = e.clientX - offsetX + "px";
-          elmnt.style.top = e.clientY - offsetY + "px";
+          if (!dragging) return;
+          const x = Math.max(
+            0,
+            Math.min(e.clientX - ox, window.innerWidth - win.offsetWidth),
+          );
+          const y = Math.max(
+            0,
+            Math.min(
+              e.clientY - oy,
+              window.innerHeight - 34 - win.offsetHeight,
+            ),
+          );
+          win.style.left = x + "px";
+          win.style.top = y + "px";
+        });
+
+        document.addEventListener("mouseup", () => {
+          dragging = false;
+        });
+
+        // resize
+        const rh = win.querySelector(".resize-handle");
+        let resizing = false,
+          rox = 0,
+          roy = 0,
+          rw = 0,
+          rh0 = 0;
+        rh.addEventListener("mousedown", (e) => {
+          resizing = true;
+          rox = e.clientX;
+          roy = e.clientY;
+          rw = win.offsetWidth;
+          rh0 = win.offsetHeight;
+          e.preventDefault();
+          e.stopPropagation();
+        });
+        document.addEventListener("mousemove", (e) => {
+          if (!resizing) return;
+          const nw = Math.max(280, rw + (e.clientX - rox));
+          const nh = Math.max(180, rh0 + (e.clientY - roy));
+          win.style.width = nw + "px";
+          const body = win.querySelector(".window-body");
+          body.style.maxHeight = nh - 32 + "px";
+        });
+        document.addEventListener("mouseup", () => {
+          resizing = false;
         });
       }
+
+      /* =========================================================
+   WALLPAPER — pixel character scene
+========================================================= */
+      (function drawWallpaper() {
+        const canvas = document.getElementById("wallpaper");
+        const ctx = canvas.getContext("2d");
+        let W,
+          H,
+          t = 0,
+          raf;
+
+        // ── Pixel font helper ──
+        const FONT = {
+          A: [
+            [0, 1, 1, 0],
+            [1, 0, 0, 1],
+            [1, 1, 1, 1],
+            [1, 0, 0, 1],
+          ],
+          B: [
+            [1, 1, 1, 0],
+            [1, 0, 0, 1],
+            [1, 1, 1, 0],
+            [1, 1, 1, 1],
+          ],
+          C: [
+            [0, 1, 1, 1],
+            [1, 0, 0, 0],
+            [1, 0, 0, 0],
+            [0, 1, 1, 1],
+          ],
+        };
+
+        // ── Pixel art avatar (16×16 grid) ──
+        // Colors: 0=transparent, 1=skin, 2=hair, 3=shirt(accent), 4=dark, 5=white, 6=glow
+        const AVATAR = [
+          [0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0],
+          [0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0],
+          [0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 2, 0, 0, 0, 0],
+          [0, 0, 0, 2, 1, 4, 1, 1, 1, 4, 1, 2, 0, 0, 0, 0],
+          [0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 2, 0, 0, 0, 0],
+          [0, 0, 0, 2, 1, 1, 5, 1, 5, 1, 1, 2, 0, 0, 0, 0],
+          [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+          [0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0],
+          [0, 3, 3, 0, 3, 3, 3, 3, 3, 3, 3, 0, 3, 3, 0, 0],
+          [3, 3, 0, 0, 3, 3, 3, 3, 3, 3, 3, 0, 0, 3, 3, 0],
+          [0, 0, 0, 0, 4, 3, 3, 3, 3, 3, 4, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 4, 4, 3, 3, 3, 4, 4, 0, 0, 0, 0, 0],
+          [0, 0, 0, 4, 4, 0, 4, 4, 4, 0, 4, 4, 0, 0, 0, 0],
+          [0, 0, 4, 4, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0],
+          [0, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0],
+        ];
+
+        const PALETTE = {
+          1: "#f5c8a0", // skin
+          2: "#1a1a2e", // dark hair
+          3: "#1a6fd4", // blue shirt
+          4: "#0a0a1a", // dark legs/shoes
+          5: "#ffffff", // eyes white
+          6: "#5bb8ff", // glow
+        };
+
+        // ── Stars ──
+        let stars = [];
+        function initStars() {
+          stars = Array.from({ length: 120 }, () => ({
+            x: Math.random() * W,
+            y: Math.random() * H * 0.75,
+            r: Math.random() * 1.5 + 0.3,
+            speed: Math.random() * 0.3 + 0.05,
+            phase: Math.random() * Math.PI * 2,
+            color: ["#fff", "#c8e6ff", "#ffe0a0", "#ffc8c8"][
+              Math.floor(Math.random() * 4)
+            ],
+          }));
+        }
+
+        // ── Floating code particles ──
+        const CODE_SNIPPETS = [
+          "{}",
+          "[]",
+          "()",
+          "<>",
+          "//",
+          "0x",
+          "&&",
+          "||",
+          "fn",
+          "if",
+          ">>",
+          "<<",
+          "+=",
+          "!=",
+          "::",
+          "->",
+        ];
+        let particles = [];
+        function initParticles() {
+          particles = Array.from({ length: 28 }, (_, i) => ({
+            x: Math.random() * W,
+            y: Math.random() * H,
+            vx: (Math.random() - 0.5) * 0.4,
+            vy: -Math.random() * 0.5 - 0.1,
+            text: CODE_SNIPPETS[i % CODE_SNIPPETS.length],
+            alpha: Math.random() * 0.4 + 0.1,
+            size: Math.floor(Math.random() * 3) * 2 + 8,
+            color: ["#5bb8ff", "#6effa0", "#ffe08a", "#d48aff"][
+              Math.floor(Math.random() * 4)
+            ],
+          }));
+        }
+
+        // ── Grid floor ──
+        function drawGrid() {
+          const horizon = H * 0.62;
+          const vanishX = W * 0.5;
+          const cols = 14,
+            rows = 10;
+          ctx.save();
+          ctx.strokeStyle = "rgba(26,111,212,0.22)";
+          ctx.lineWidth = 1;
+          // horizontal lines (perspective)
+          for (let r = 0; r <= rows; r++) {
+            const prog = r / rows;
+            const y = horizon + (H - horizon) * prog;
+            const spread = 0.3 + prog * 0.7;
+            ctx.beginPath();
+            ctx.moveTo(vanishX - W * spread, y);
+            ctx.lineTo(vanishX + W * spread, y);
+            ctx.stroke();
+          }
+          // vertical lines
+          for (let c = -cols; c <= cols; c++) {
+            ctx.beginPath();
+            ctx.moveTo(vanishX + c * (W / cols) * 0.35, horizon);
+            ctx.lineTo(vanishX + c * (W / cols) * 2.2, H + 10);
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+
+        // ── Mountains / city silhouette ──
+        function drawCity(yBase) {
+          ctx.save();
+          ctx.fillStyle = "#10122a";
+          const buildings = [
+            { x: 0.05, w: 0.06, h: 0.12 },
+            { x: 0.1, w: 0.04, h: 0.2 },
+            { x: 0.13, w: 0.07, h: 0.15 },
+            { x: 0.19, w: 0.03, h: 0.28 },
+            { x: 0.21, w: 0.06, h: 0.18 },
+            { x: 0.26, w: 0.04, h: 0.24 },
+            { x: 0.3, w: 0.08, h: 0.14 },
+            { x: 0.37, w: 0.03, h: 0.32 },
+            { x: 0.39, w: 0.06, h: 0.22 },
+            { x: 0.55, w: 0.06, h: 0.22 },
+            { x: 0.6, w: 0.03, h: 0.32 },
+            { x: 0.62, w: 0.08, h: 0.14 },
+            { x: 0.7, w: 0.04, h: 0.24 },
+            { x: 0.73, w: 0.06, h: 0.18 },
+            { x: 0.78, w: 0.03, h: 0.28 },
+            { x: 0.8, w: 0.07, h: 0.15 },
+            { x: 0.86, w: 0.04, h: 0.2 },
+            { x: 0.89, w: 0.06, h: 0.12 },
+          ];
+          buildings.forEach((b) => {
+            ctx.fillRect(b.x * W, yBase - b.h * H, b.w * W, b.h * H + 2);
+          });
+          // window lights
+          ctx.fillStyle = "rgba(255,220,100,0.55)";
+          buildings.forEach((b) => {
+            const bx = b.x * W,
+              bw = b.w * W,
+              bh = b.h * H;
+            const by = yBase - bh;
+            const cols2 = Math.max(1, Math.floor(bw / 7));
+            const rows2 = Math.max(1, Math.floor(bh / 9));
+            for (let r = 0; r < rows2; r++) {
+              for (let c = 0; c < cols2; c++) {
+                if (Math.random() < 0.45) {
+                  ctx.fillRect(bx + c * 7 + 2, by + r * 9 + 2, 3, 4);
+                }
+              }
+            }
+          });
+          ctx.restore();
+        }
+
+        // ── Draw pixel avatar ──
+        function drawAvatar(cx, cy, scale, bobOffset) {
+          const pw = scale,
+            ph = scale;
+          const ox = cx - (AVATAR[0].length * pw) / 2;
+          const oy = cy - (AVATAR.length * ph) / 2 + bobOffset;
+
+          // glow behind avatar
+          const grd = ctx.createRadialGradient(
+            cx,
+            cy + bobOffset,
+            0,
+            cx,
+            cy + bobOffset,
+            scale * 14,
+          );
+          grd.addColorStop(0, "rgba(91,184,255,0.18)");
+          grd.addColorStop(1, "rgba(91,184,255,0)");
+          ctx.fillStyle = grd;
+          ctx.fillRect(
+            ox - scale * 4,
+            oy - scale * 2,
+            AVATAR[0].length * pw + scale * 8,
+            AVATAR.length * ph + scale * 4,
+          );
+
+          AVATAR.forEach((row, ry) => {
+            row.forEach((cell, cx2) => {
+              if (!cell) return;
+              ctx.fillStyle = PALETTE[cell];
+              ctx.fillRect(ox + cx2 * pw, oy + ry * ph, pw - 0.5, ph - 0.5);
+            });
+          });
+        }
+
+        // ── Moon ──
+        function drawMoon() {
+          const mx = W * 0.82,
+            my = H * 0.14;
+          const r = Math.min(W, H) * 0.055;
+          // glow
+          const grd = ctx.createRadialGradient(mx, my, 0, mx, my, r * 3);
+          grd.addColorStop(0, "rgba(200,230,255,0.18)");
+          grd.addColorStop(1, "rgba(200,230,255,0)");
+          ctx.fillStyle = grd;
+          ctx.beginPath();
+          ctx.arc(mx, my, r * 3, 0, Math.PI * 2);
+          ctx.fill();
+          // moon body
+          ctx.fillStyle = "#d8eeff";
+          ctx.beginPath();
+          ctx.arc(mx, my, r, 0, Math.PI * 2);
+          ctx.fill();
+          // craters
+          ctx.fillStyle = "rgba(150,190,230,0.5)";
+          [
+            [0.3, -0.2, 0.15],
+            [-0.25, 0.1, 0.1],
+            [0.1, 0.35, 0.08],
+          ].forEach(([dx, dy, cr]) => {
+            ctx.beginPath();
+            ctx.arc(mx + dx * r, my + dy * r, cr * r, 0, Math.PI * 2);
+            ctx.fill();
+          });
+        }
+
+        // ── Main draw loop ──
+        function draw() {
+          t += 0.012;
+          ctx.clearRect(0, 0, W, H);
+
+          // Sky gradient
+          const sky = ctx.createLinearGradient(0, 0, 0, H * 0.65);
+          sky.addColorStop(0, "#04040f");
+          sky.addColorStop(0.4, "#0a0a2a");
+          sky.addColorStop(1, "#12183a");
+          ctx.fillStyle = sky;
+          ctx.fillRect(0, 0, W, H * 0.65);
+
+          // Ground
+          const gnd = ctx.createLinearGradient(0, H * 0.62, 0, H);
+          gnd.addColorStop(0, "#080814");
+          gnd.addColorStop(1, "#050508");
+          ctx.fillStyle = gnd;
+          ctx.fillRect(0, H * 0.62, W, H * 0.38);
+
+          drawMoon();
+
+          // Stars twinkle
+          stars.forEach((s) => {
+            const twinkle = 0.5 + 0.5 * Math.sin(t * s.speed * 8 + s.phase);
+            ctx.globalAlpha = twinkle * 0.85;
+            ctx.fillStyle = s.color;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+            ctx.fill();
+          });
+          ctx.globalAlpha = 1;
+
+          drawGrid();
+          drawCity(H * 0.625);
+
+          // Scanline overlay on sky
+          ctx.fillStyle = "rgba(0,0,0,0.06)";
+          for (let y = 0; y < H * 0.65; y += 4) {
+            ctx.fillRect(0, y, W, 1);
+          }
+
+          // Code particles
+          ctx.save();
+          particles.forEach((p) => {
+            p.x += p.vx;
+            p.y += p.vy;
+            if (p.y < -20) {
+              p.y = H * 0.9;
+              p.x = Math.random() * W;
+            }
+            if (p.x < -30) p.x = W + 10;
+            if (p.x > W + 30) p.x = -10;
+            ctx.globalAlpha = p.alpha * (0.6 + 0.4 * Math.sin(t * 2 + p.x));
+            ctx.fillStyle = p.color;
+            ctx.font = `bold ${p.size}px 'Share Tech Mono', monospace`;
+            ctx.fillText(p.text, p.x, p.y);
+          });
+          ctx.globalAlpha = 1;
+          ctx.restore();
+
+          // Avatar — center-bottom area, gentle bob
+          const avatarScale = Math.max(10, Math.min(W, H) * 0.028);
+          const bob = Math.sin(t * 1.4) * avatarScale * 0.4;
+          const avatarX = W * 0.5;
+          const avatarY = H * 0.58;
+          drawAvatar(avatarX, avatarY, avatarScale, bob);
+
+          // shadow under avatar
+          ctx.save();
+          ctx.globalAlpha = 0.25 + 0.05 * Math.sin(t * 1.4);
+          ctx.fillStyle = "#000";
+          const sw = avatarScale * 10;
+          ctx.beginPath();
+          ctx.ellipse(
+            avatarX,
+            H * 0.625,
+            sw * 0.5,
+            sw * 0.1,
+            0,
+            0,
+            Math.PI * 2,
+          );
+          ctx.fill();
+          ctx.restore();
+
+          // Horizon glow
+          const hgrd = ctx.createLinearGradient(0, H * 0.58, 0, H * 0.66);
+          hgrd.addColorStop(0, "rgba(26,111,212,0.0)");
+          hgrd.addColorStop(0.5, "rgba(26,111,212,0.12)");
+          hgrd.addColorStop(1, "rgba(26,111,212,0.0)");
+          ctx.fillStyle = hgrd;
+          ctx.fillRect(0, H * 0.58, W, H * 0.08);
+
+          raf = requestAnimationFrame(draw);
+        }
+
+        function resize() {
+          W = canvas.width = window.innerWidth;
+          H = canvas.height = window.innerHeight;
+          initStars();
+          initParticles();
+        }
+
+        window.addEventListener("resize", resize);
+        resize();
+        draw();
+      })();
+
+      function updateClock() {
+        const now = new Date();
+        const h = String(now.getHours()).padStart(2, "0");
+        const m = String(now.getMinutes()).padStart(2, "0");
+        document.getElementById("clock").textContent = h + ":" + m;
+      }
+      updateClock();
+      setInterval(updateClock, 15000);
+
+      /* =========================================================
+
+
+/* =========================================================
+   DRAGGABLE ICONS
+========================================================= */
+      (function initIconDrag() {
+        const icons = document.querySelectorAll(".icon");
+
+        icons.forEach((icon) => {
+          let startX, startY, origLeft, origTop;
+          let moved = false;
+          const DRAG_THRESHOLD = 5;
+
+          // ── MOUSE ──
+          icon.addEventListener("mousedown", (e) => {
+            if (e.button !== 0) return;
+            startX = e.clientX;
+            startY = e.clientY;
+            origLeft = icon.offsetLeft;
+            origTop = icon.offsetTop;
+            moved = false;
+
+            function onMove(e) {
+              const dx = e.clientX - startX;
+              const dy = e.clientY - startY;
+              if (!moved && Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
+              moved = true;
+              icon.classList.add("dragging");
+              const nx = Math.max(
+                0,
+                Math.min(origLeft + dx, window.innerWidth - icon.offsetWidth),
+              );
+              const ny = Math.max(
+                0,
+                Math.min(
+                  origTop + dy,
+                  window.innerHeight - 34 - icon.offsetHeight,
+                ),
+              );
+              icon.style.left = nx + "px";
+              icon.style.top = ny + "px";
+            }
+
+            function onUp() {
+              document.removeEventListener("mousemove", onMove);
+              document.removeEventListener("mouseup", onUp);
+              icon.classList.remove("dragging");
+              if (!moved) {
+                // treat as click → open window
+                openWindow(icon.dataset.target);
+              }
+            }
+
+            document.addEventListener("mousemove", onMove);
+            document.addEventListener("mouseup", onUp);
+            e.preventDefault();
+          });
+
+          // keyboard activation
+          icon.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ")
+              openWindow(icon.dataset.target);
+          });
+
+          // ── TOUCH ──
+          icon.addEventListener(
+            "touchstart",
+            (e) => {
+              const t = e.touches[0];
+              startX = t.clientX;
+              startY = t.clientY;
+              origLeft = icon.offsetLeft;
+              origTop = icon.offsetTop;
+              moved = false;
+              e.stopPropagation();
+            },
+            { passive: true },
+          );
+
+          icon.addEventListener(
+            "touchmove",
+            (e) => {
+              const t = e.touches[0];
+              const dx = t.clientX - startX;
+              const dy = t.clientY - startY;
+              if (!moved && Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
+              moved = true;
+              icon.classList.add("dragging");
+              const nx = Math.max(
+                0,
+                Math.min(origLeft + dx, window.innerWidth - icon.offsetWidth),
+              );
+              const ny = Math.max(
+                0,
+                Math.min(
+                  origTop + dy,
+                  window.innerHeight - 34 - icon.offsetHeight,
+                ),
+              );
+              icon.style.left = nx + "px";
+              icon.style.top = ny + "px";
+              e.preventDefault();
+            },
+            { passive: false },
+          );
+
+          icon.addEventListener("touchend", () => {
+            icon.classList.remove("dragging");
+            if (!moved) openWindow(icon.dataset.target);
+          });
+        });
+      })();
+
+      /* =========================================================
+   BOOT: open about automatically
+========================================================= */
+      window.addEventListener("load", () => {
+        setTimeout(() => openWindow("about"), 200);
+      });
+
+      /* =========================================================
+   CLOSE mobile windows by tapping teal desktop area
+========================================================= */
+      document.getElementById("desktop").addEventListener("click", (e) => {
+        if (!isMobile()) return;
+        if (e.target.closest(".window") || e.target.closest(".icon")) return;
+        // close topmost open window
+        const entries = Object.entries(openWindows).filter(
+          ([, w]) => !w.minimized,
+        );
+        if (!entries.length) return;
+        entries.sort(
+          ([, a], [, b]) =>
+            parseInt(b.el.style.zIndex) - parseInt(a.el.style.zIndex),
+        );
+        closeWindow(entries[0][0]);
+      });
     </script>
   </body>
 </html>
