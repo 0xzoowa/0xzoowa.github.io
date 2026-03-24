@@ -1446,7 +1446,6 @@
           return '<p style="color:#888;font-size:12px;">No entries yet. Press Ctrl+Shift+J to write one.</p>';
         return `<ul style="list-style:none;padding:0">${items
           .map((item) => {
-            console.log("Rendering item", item.id);
             const badge =
               item.source === "local"
                 ? `<span class="entry-source-badge local">local</span>`
