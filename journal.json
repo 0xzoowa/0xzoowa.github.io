@@ -1,16 +1,16 @@
 [
   {
+    "id": "building-a-browser-only-journal:-what-i-tried-and-what-actually-worked-mn4s4zvl",
+    "title": "Building a Browser-Only Journal: What I Tried and What Actually Worked",
+    "body": "I wanted a journal that ran purely in the browser — no backend, no server. Simple enough goal, messier execution than I expected.\nMy first instinct was localStorage. It's built-in, the API is dead simple, and it felt like the obvious choice. But the problem I kept running into was that the data was trapped on my machine — open it on another device and the entries are just gone. That's not really persistence, that's just delayed loss.\nSo I tried keeping everything in a plain JS array. Even simpler to work with, but a page refresh wipes it completely. At least localStorage survived that much.\n\nThe approach that finally clicked was a static journal.json file. Entries live there, a small build script handles adding new ones during development, and the client fetches it at runtime. No server, no localStorage headaches, and it deploys fine on GitHub Pages or anywhere static. The entries are actually there, baked into the project, not floating in some browser cache on one specific laptop.\n\nThe tradeoff is that you can't persist new entries on the deployed version without a rebuild — but for what I needed, that's an acceptable constraint. Predictable, portable, and easy to reason about.\n\nThe progression went: \n<pre>\n<code>\nlocalStorage → JS array → static JSON with a build step.\n</code>\n</pre>\n\nEach dead end was useful in its own way, and I'm curious to see how I'd refine this further down the line — whether that's smarter syncing, a lightweight backend, or something I haven't thought of yet.",
+    "date": "2026-03-24T15:38:50.913Z",
+    "source": "local"
+  },
+  {
     "id": "from-high-level-code-to-machine-instructions-mn4r8gp5",
     "title": "From High-Level Code to Machine Instructions",
     "body": "<h4>1. The Compiler</h4>\n<p>The first stage of the pipeline is the Jack compiler. At a high level, the compiler performs three tasks: <strong>Lexical Analysis</strong>, <strong>Parsing</strong>, and <strong>Code Generation</strong> — outputting VM instructions rather than machine code directly.</p>\n<pre><code>let x = y + 2;\nbecomes:\n\npush local 1\npush constant 2\nadd\npop local 0\n</code></pre>\n\n<h4>2. The Virtual Machine</h4>\n<p>The VM Translator converts stack-based VM instructions into Hack assembly. This stage revealed how function calls, variable storage, and arithmetic all reduce to carefully orchestrated stack and memory operations.</p>\n\n<h4>3. The Assembler</h4>\n<p>The assembler translates Hack assembly into 16-bit binary instructions. It uses a two-pass process: first recording label locations, then translating and assigning memory addresses.</p>\n\n<pre><code>\nJack → VM code → Hack assembly → Machine code\n</code></pre>",
     "date": "2026-03-24T15:13:33.065Z",
-    "source": "local"
-  },
-  {
-    "id": "building-a-browser-only-journal:-what-i-tried-and-what-actually-worked-mn4qnm9q",
-    "title": "Building a Browser-Only Journal: What I Tried and What Actually Worked",
-    "body": "I wanted a journal that ran purely in the browser — no backend, no server. Simple enough goal, messier execution than I expected.\nMy first instinct was localStorage. It's built-in, the API is dead simple, and it felt like the obvious choice. But the problem I kept running into was that the data was trapped on my machine — open it on another device and the entries are just gone. That's not really persistence, that's just delayed loss.\nSo I tried keeping everything in a plain JS array. Even simpler to work with, but a page refresh wipes it completely. At least localStorage survived that much.\nThe approach that finally clicked was a static journal.json file. Entries live there, a small build script handles adding new ones during development, and the client fetches it at runtime. No server, no localStorage headaches, and it deploys fine on GitHub Pages or anywhere static. The entries are actually there, baked into the project, not floating in some browser cache on one specific laptop.\nThe tradeoff is that you can't persist new entries on the deployed version without a rebuild — but for what I needed, that's an acceptable constraint. Predictable, portable, and easy to reason about.\nThe progression went: localStorage → JS array → static JSON with a build step. Each dead end was useful in its own way, and I'm curious to see how I'd refine this further down the line — whether that's smarter syncing, a lightweight backend, or something I haven't thought of yet.",
-    "date": "2026-03-24T14:57:20.510Z",
     "source": "local"
   }
 ]
