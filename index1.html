@@ -1,0 +1,2120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>0xzoowa's space</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --teal: #008080;
+        --navy: #000080;
+        --navy-hi: #1084d0;
+        --silver: #c0c0c0;
+        --silver-dark: #808080;
+        --white: #ffffff;
+        --black: #000000;
+        --win-bg: #d4d0c8;
+        --titlebar-h: 28px;
+        --border-light: #ffffff;
+        --border-dark: #808080;
+        --border-darker: #404040;
+        --shadow: rgba(0, 0, 0, 0.4);
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      body {
+        background: #0d1117;
+        font-family: "Share Tech Mono", "Courier New", monospace;
+        font-size: 13px;
+        position: relative;
+      }
+
+      #desktop {
+        width: 100vw;
+        height: 100vh;
+        position: relative;
+        overflow: hidden;
+        background: #0d1117;
+      }
+
+      #wallpaper {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+      }
+
+      #taskbar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 34px;
+        background: var(--silver);
+        border-top: 2px solid var(--border-light);
+        display: flex;
+        align-items: center;
+        padding: 0 6px;
+        gap: 4px;
+        z-index: 9999;
+        box-shadow: 0 -1px 0 var(--border-dark);
+      }
+
+      #start-btn {
+        background: var(--silver);
+        border-top: 2px solid var(--border-light);
+        border-left: 2px solid var(--border-light);
+        border-bottom: 2px solid var(--border-darker);
+        border-right: 2px solid var(--border-darker);
+        padding: 3px 10px;
+        font-family: "VT323", monospace;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: var(--black);
+        user-select: none;
+        white-space: nowrap;
+      }
+      #start-btn:active {
+        border-top: 2px solid var(--border-darker);
+        border-left: 2px solid var(--border-darker);
+        border-bottom: 2px solid var(--border-light);
+        border-right: 2px solid var(--border-light);
+      }
+
+      #clock {
+        margin-left: auto;
+        border-top: 2px solid var(--border-dark);
+        border-left: 2px solid var(--border-dark);
+        border-bottom: 2px solid var(--border-light);
+        border-right: 2px solid var(--border-light);
+        padding: 3px 8px;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .taskbar-btn {
+        background: var(--silver);
+        border-top: 2px solid var(--border-light);
+        border-left: 2px solid var(--border-light);
+        border-bottom: 2px solid var(--border-darker);
+        border-right: 2px solid var(--border-darker);
+        padding: 2px 8px;
+        font-family: "Share Tech Mono", monospace;
+        font-size: 11px;
+        cursor: pointer;
+        max-width: 140px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--black);
+      }
+      .taskbar-btn.active {
+        border-top: 2px solid var(--border-darker);
+        border-left: 2px solid var(--border-darker);
+        border-bottom: 2px solid var(--border-light);
+        border-right: 2px solid var(--border-light);
+        background: var(--silver-dark);
+        color: var(--white);
+      }
+
+      .icon {
+        position: absolute;
+        z-index: 2;
+        color: white;
+        text-align: center;
+        cursor: grab;
+        width: 72px;
+        padding: 4px;
+        border: 2px solid transparent;
+        border-radius: 2px;
+        transition:
+          border-color 0.1s,
+          box-shadow 0.1s;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: none;
+      }
+      .icon:hover {
+        border-color: rgba(255, 255, 255, 0.45);
+      }
+      .icon:focus {
+        outline: none;
+        border-color: rgba(255, 255, 255, 0.5);
+      }
+      .icon.selected {
+        background: rgba(0, 0, 128, 0.45);
+        border-color: rgba(255, 255, 255, 0.75);
+      }
+      .icon.dragging {
+        cursor: grabbing;
+        opacity: 0.85;
+        box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.5);
+        z-index: 8000 !important;
+      }
+
+      .icon .ico-wrap {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 4px;
+        position: relative;
+      }
+      .icon .ico-wrap svg {
+        width: 48px;
+        height: 48px;
+        filter: drop-shadow(1px 2px 3px rgba(0, 0, 0, 0.55));
+      }
+      .icon .ico-badge {
+        position: absolute;
+        bottom: -2px;
+        right: -4px;
+        font-size: 16px;
+        line-height: 1;
+        filter: drop-shadow(0 1px 2px #000);
+      }
+      .icon span {
+        font-family: "VT323", monospace;
+        font-size: 14px;
+        display: block;
+        text-shadow: 1px 1px 2px #000;
+        word-break: break-word;
+        line-height: 1.2;
+      }
+
+      /* ── WINDOW ── */
+      .window {
+        position: absolute;
+        background: var(--win-bg);
+        border-top: 2px solid var(--border-light);
+        border-left: 2px solid var(--border-light);
+        border-bottom: 2px solid var(--border-darker);
+        border-right: 2px solid var(--border-darker);
+        min-width: 280px;
+        max-width: calc(100vw - 20px);
+        display: flex;
+        flex-direction: column;
+        box-shadow: 4px 4px 0 var(--shadow);
+      }
+
+      .title-bar {
+        background: linear-gradient(to right, var(--navy), var(--navy-hi));
+        color: var(--white);
+        padding: 4px 6px;
+        cursor: move;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 6px;
+        min-height: var(--titlebar-h);
+        flex-shrink: 0;
+        user-select: none;
+        -webkit-touch-callout: none;
+      }
+      .title-bar .title-text {
+        font-family: "VT323", monospace;
+        font-size: 16px;
+        letter-spacing: 0.5px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        flex: 1;
+      }
+      .title-bar .win-btns {
+        display: flex;
+        gap: 3px;
+        flex-shrink: 0;
+      }
+
+      .win-btn {
+        background: var(--silver);
+        border-top: 2px solid var(--border-light);
+        border-left: 2px solid var(--border-light);
+        border-bottom: 2px solid var(--border-darker);
+        border-right: 2px solid var(--border-darker);
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 11px;
+        color: var(--black);
+        font-weight: bold;
+        flex-shrink: 0;
+        line-height: 1;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .win-btn:active {
+        border-top: 2px solid var(--border-darker);
+        border-left: 2px solid var(--border-darker);
+        border-bottom: 2px solid var(--border-light);
+        border-right: 2px solid var(--border-light);
+      }
+
+      .window-body {
+        border-top: 2px solid var(--border-dark);
+        border-left: 2px solid var(--border-dark);
+        border-bottom: 1px solid var(--border-light);
+        border-right: 1px solid var(--border-light);
+        margin: 2px;
+        background: #f5f4ef;
+        overflow-y: auto;
+        flex: 1;
+      }
+
+      .content {
+        padding: 14px 16px;
+        line-height: 1.7;
+        color: #111;
+      }
+      .content h3 {
+        font-family: "VT323", monospace;
+        font-size: 20px;
+        margin-bottom: 8px;
+        color: var(--navy);
+        border-bottom: 1px solid var(--silver-dark);
+        padding-bottom: 4px;
+      }
+      .content h4 {
+        font-family: "VT323", monospace;
+        font-size: 17px;
+        margin: 12px 0 4px;
+        color: #333;
+      }
+      .content p {
+        margin-bottom: 8px;
+        font-size: 13px;
+      }
+      .content ul {
+        padding-left: 20px;
+      }
+      .content li {
+        margin-bottom: 6px;
+      }
+      .content a {
+        color: var(--navy);
+        text-decoration: underline;
+        cursor: pointer;
+      }
+      .content a:hover {
+        color: #0000ff;
+      }
+      .content pre {
+        background: #e8e8e0;
+        border: 1px solid var(--silver-dark);
+        padding: 8px;
+        font-size: 11px;
+        overflow-x: auto;
+        margin: 8px 0;
+      }
+      .content code {
+        font-family: "Share Tech Mono", monospace;
+      }
+
+      .prompt-line {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-bottom: 5px;
+        font-size: 13px;
+      }
+      .prompt-line .label {
+        color: #008080;
+        font-weight: bold;
+      }
+      .prompt-line .val {
+        color: #111;
+      }
+      .prompt-footer {
+        margin-top: 12px;
+        font-size: 12px;
+        color: #555;
+        border-top: 1px dashed var(--silver-dark);
+        padding-top: 8px;
+      }
+
+      .resize-handle {
+        width: 14px;
+        height: 14px;
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        cursor: se-resize;
+        background: var(--win-bg);
+        border-top: 1px solid var(--border-dark);
+        border-left: 1px solid var(--border-dark);
+      }
+      .resize-handle::after {
+        content: "";
+        display: block;
+        width: 10px;
+        height: 10px;
+        background: repeating-linear-gradient(
+          -45deg,
+          var(--border-dark),
+          var(--border-dark) 1px,
+          transparent 1px,
+          transparent 3px
+        );
+        margin: 2px;
+      }
+
+      /* ── JOURNAL ENTRY LIST ── */
+      .journal-entry-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 2px 0;
+      }
+      .journal-entry-row a {
+        flex: 1;
+      }
+      .entry-meta {
+        font-size: 11px;
+        color: var(--silver-dark);
+        white-space: nowrap;
+        margin-top: 2px;
+      }
+      .entry-source-badge {
+        font-size: 10px;
+        padding: 1px 5px;
+        border: 1px solid currentColor;
+        border-radius: 2px;
+        margin-left: 6px;
+        vertical-align: middle;
+      }
+      .entry-source-badge.local {
+        color: #008080;
+      }
+      .entry-source-badge.builtin {
+        color: var(--silver-dark);
+      }
+
+      .delete-btn {
+        background: none;
+        border: 1px solid #c00;
+        color: #c00;
+        font-family: "Share Tech Mono", monospace;
+        font-size: 10px;
+        padding: 1px 5px;
+        cursor: pointer;
+        display: none;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      .delete-btn:hover {
+        background: #c00;
+        color: #fff;
+      }
+      body.admin-mode .delete-btn {
+        display: inline-block;
+      }
+
+      /* ── ADMIN MODE INDICATOR ── */
+      #admin-indicator {
+        position: fixed;
+        bottom: 40px;
+        right: 8px;
+        background: #800000;
+        color: #ffcc00;
+        font-family: "VT323", monospace;
+        font-size: 13px;
+        padding: 2px 8px;
+        border: 1px solid #ffcc00;
+        z-index: 99990;
+        display: none;
+        letter-spacing: 1px;
+        animation: adminBlink 1.2s step-end infinite;
+      }
+      @keyframes adminBlink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.4;
+        }
+      }
+      body.admin-mode #admin-indicator {
+        display: block;
+      }
+
+      /* ── EDITOR WINDOW ── */
+      #editor-window {
+        position: fixed;
+        z-index: 99900;
+        width: 480px;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        background: var(--win-bg);
+        border-top: 2px solid var(--border-light);
+        border-left: 2px solid var(--border-light);
+        border-bottom: 2px solid var(--border-darker);
+        border-right: 2px solid var(--border-darker);
+        box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.5);
+        display: none;
+        flex-direction: column;
+        max-width: calc(100vw - 20px);
+      }
+      #editor-window.open {
+        display: flex;
+      }
+
+      #editor-window .editor-body {
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .editor-field-label {
+        font-family: "VT323", monospace;
+        font-size: 15px;
+        color: var(--navy);
+        margin-bottom: 3px;
+        display: block;
+      }
+
+      #editor-title {
+        width: 100%;
+        font-family: "Share Tech Mono", monospace;
+        font-size: 13px;
+        border-top: 2px solid var(--border-dark);
+        border-left: 2px solid var(--border-dark);
+        border-bottom: 1px solid var(--border-light);
+        border-right: 1px solid var(--border-light);
+        padding: 5px 8px;
+        background: #fff;
+        color: #111;
+        outline: none;
+      }
+      #editor-title:focus {
+        border-color: var(--navy);
+      }
+
+      #editor-body-text {
+        width: 100%;
+        height: 180px;
+        font-family: "Share Tech Mono", monospace;
+        font-size: 12px;
+        border-top: 2px solid var(--border-dark);
+        border-left: 2px solid var(--border-dark);
+        border-bottom: 1px solid var(--border-light);
+        border-right: 1px solid var(--border-light);
+        padding: 8px;
+        background: #fff;
+        color: #111;
+        resize: vertical;
+        outline: none;
+        line-height: 1.6;
+      }
+      #editor-body-text:focus {
+        border-color: var(--navy);
+      }
+
+      .editor-hint {
+        font-size: 11px;
+        color: var(--silver-dark);
+        margin-top: -6px;
+      }
+
+      .editor-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        padding: 6px 16px 14px;
+      }
+
+      .editor-btn {
+        font-family: "Share Tech Mono", monospace;
+        font-size: 12px;
+        padding: 4px 16px;
+        cursor: pointer;
+        border-top: 2px solid var(--border-light);
+        border-left: 2px solid var(--border-light);
+        border-bottom: 2px solid var(--border-darker);
+        border-right: 2px solid var(--border-darker);
+        background: var(--silver);
+        color: var(--black);
+      }
+      .editor-btn:active {
+        border-top: 2px solid var(--border-darker);
+        border-left: 2px solid var(--border-darker);
+        border-bottom: 2px solid var(--border-light);
+        border-right: 2px solid var(--border-light);
+      }
+      .editor-btn.primary {
+        background: var(--navy);
+        color: white;
+        border-top-color: #4477cc;
+        border-left-color: #4477cc;
+        border-bottom-color: #000040;
+        border-right-color: #000040;
+      }
+      .editor-btn.primary:active {
+        border-top-color: #000040;
+        border-left-color: #000040;
+        border-bottom-color: #4477cc;
+        border-right-color: #4477cc;
+      }
+
+      /* save flash */
+      #save-flash {
+        position: fixed;
+        bottom: 42px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #006400;
+        color: #90ee90;
+        font-family: "VT323", monospace;
+        font-size: 14px;
+        padding: 3px 14px;
+        border: 1px solid #90ee90;
+        z-index: 99999;
+        display: none;
+        pointer-events: none;
+      }
+
+      /* ── START MENU ── */
+      #start-menu {
+        position: fixed;
+        bottom: 34px;
+        left: 0;
+        width: 240px;
+        background: var(--silver);
+        border-top: 2px solid var(--border-light);
+        border-left: 2px solid var(--border-light);
+        border-right: 2px solid var(--border-darker);
+        border-bottom: 2px solid var(--border-darker);
+        box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.4);
+        z-index: 99999;
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+        transform-origin: bottom left;
+      }
+      #start-menu.open {
+        display: flex;
+        animation: menuPop 0.12s ease-out;
+      }
+      @keyframes menuPop {
+        from {
+          opacity: 0;
+          transform: scaleY(0.88);
+        }
+        to {
+          opacity: 1;
+          transform: scaleY(1);
+        }
+      }
+      #start-menu .sm-sidebar {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 28px;
+        background: linear-gradient(to top, var(--navy), #1a50a0);
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding-bottom: 6px;
+      }
+      #start-menu .sm-sidebar span {
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        font-family: "VT323", monospace;
+        font-size: 17px;
+        color: rgba(255, 255, 255, 0.5);
+        letter-spacing: 2px;
+        user-select: none;
+      }
+      #start-menu .sm-items {
+        margin-left: 28px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .sm-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 7px 12px;
+        cursor: pointer;
+        font-family: "Share Tech Mono", monospace;
+        font-size: 13px;
+        color: var(--black);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        white-space: nowrap;
+        user-select: none;
+      }
+      .sm-item:hover,
+      .sm-item:focus {
+        background: var(--navy);
+        color: white;
+        outline: none;
+      }
+      .sm-item .sm-ico {
+        font-size: 18px;
+        width: 22px;
+        text-align: center;
+        flex-shrink: 0;
+      }
+      .sm-divider {
+        height: 1px;
+        background: var(--border-dark);
+        margin: 3px 6px;
+        flex-shrink: 0;
+      }
+      .sm-item.sm-shutdown {
+        border-top: 2px solid var(--border-dark);
+        border-bottom: none;
+      }
+
+      /* ── MOBILE ── */
+      @media (max-width: 600px) {
+        .window {
+          position: fixed !important;
+          left: 0 !important;
+          right: 0 !important;
+          bottom: 34px !important;
+          top: auto !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          max-height: 70vh;
+          border-radius: 0;
+          box-shadow: 0 -4px 16px var(--shadow);
+          transform: translateY(100%);
+          transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          z-index: 100;
+        }
+        .window.open {
+          transform: translateY(0);
+        }
+        .window .resize-handle {
+          display: none;
+        }
+        .title-bar {
+          cursor: default;
+        }
+        .window-body {
+          max-height: calc(70vh - var(--titlebar-h) - 8px);
+        }
+        .icon {
+          width: 60px;
+        }
+        .icon .ico {
+          font-size: 30px;
+        }
+        .icon span {
+          font-size: 12px;
+        }
+        #taskbar {
+          height: 40px;
+        }
+        .taskbar-btn {
+          max-width: 100px;
+          font-size: 10px;
+        }
+        #editor-window {
+          width: calc(100vw - 20px);
+        }
+      }
+      .window.minimized {
+        display: none;
+      }
+      ::selection {
+        background: var(--navy);
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="desktop">
+      <canvas id="wallpaper"></canvas>
+
+      <div
+        class="icon"
+        id="icon-about"
+        data-target="about"
+        style="top: 20px; left: 16px"
+        tabindex="0"
+      >
+        <div class="ico-wrap">
+          <svg
+            viewBox="0 0 48 48"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M38 12 A18 18 0 1 0 38 36"
+              stroke="#c8e6ff"
+              stroke-width="9"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <path
+              d="M38 12 A18 18 0 1 0 38 36"
+              stroke="#1a6fd4"
+              stroke-width="5.5"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <path
+              d="M38 12 A18 18 0 1 0 38 36"
+              stroke="#5bb8ff"
+              stroke-width="2"
+              stroke-linecap="round"
+              fill="none"
+              opacity="0.6"
+            />
+          </svg>
+          <span class="ico-badge">💾</span>
+        </div>
+        <span>About</span>
+      </div>
+
+      <div
+        class="icon"
+        id="icon-projects"
+        data-target="projects"
+        style="top: 120px; left: 16px"
+        tabindex="0"
+      >
+        <div class="ico-wrap">
+          <svg
+            viewBox="0 0 48 48"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M38 12 A18 18 0 1 0 38 36"
+              stroke="#ffd9a0"
+              stroke-width="9"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <path
+              d="M38 12 A18 18 0 1 0 38 36"
+              stroke="#d48a1a"
+              stroke-width="5.5"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <path
+              d="M38 12 A18 18 0 1 0 38 36"
+              stroke="#ffe08a"
+              stroke-width="2"
+              stroke-linecap="round"
+              fill="none"
+              opacity="0.6"
+            />
+          </svg>
+          <span class="ico-badge">📁</span>
+        </div>
+        <span>Projects</span>
+      </div>
+
+      <div
+        class="icon"
+        id="icon-journal"
+        data-target="journal"
+        style="top: 220px; left: 16px"
+        tabindex="0"
+      >
+        <div class="ico-wrap">
+          <svg
+            viewBox="0 0 48 48"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M38 12 A18 18 0 1 0 38 36"
+              stroke="#c8ffd4"
+              stroke-width="9"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <path
+              d="M38 12 A18 18 0 1 0 38 36"
+              stroke="#1a8c3c"
+              stroke-width="5.5"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <path
+              d="M38 12 A18 18 0 1 0 38 36"
+              stroke="#6effa0"
+              stroke-width="2"
+              stroke-linecap="round"
+              fill="none"
+              opacity="0.6"
+            />
+          </svg>
+          <span class="ico-badge">📓</span>
+        </div>
+        <span>Journal</span>
+      </div>
+
+      <div
+        class="icon"
+        id="icon-essays"
+        data-target="essays"
+        style="top: 320px; left: 16px"
+        tabindex="0"
+      >
+        <div class="ico-wrap">
+          <svg
+            viewBox="0 0 48 48"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M38 12 A18 18 0 1 0 38 36"
+              stroke="#f5c8ff"
+              stroke-width="9"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <path
+              d="M38 12 A18 18 0 1 0 38 36"
+              stroke="#8a1ad4"
+              stroke-width="5.5"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <path
+              d="M38 12 A18 18 0 1 0 38 36"
+              stroke="#d48aff"
+              stroke-width="2"
+              stroke-linecap="round"
+              fill="none"
+              opacity="0.6"
+            />
+          </svg>
+          <span class="ico-badge">📝</span>
+        </div>
+        <span>Essays</span>
+      </div>
+    </div>
+
+    <!-- ADMIN INDICATOR -->
+    <div id="admin-indicator">⚠ ADMIN MODE</div>
+
+    <!-- SAVE FLASH -->
+    <div id="save-flash">✓ Entry saved</div>
+
+    <!-- EDITOR WINDOW -->
+    <div id="editor-window">
+      <div class="title-bar" id="editor-titlebar">
+        <span class="title-text">📓 New Journal Entry</span>
+        <div class="win-btns">
+          <div class="win-btn" title="Close" onclick="closeEditor()">✕</div>
+        </div>
+      </div>
+      <div class="editor-body">
+        <div>
+          <label class="editor-field-label" for="editor-title">Title:</label>
+          <input
+            type="text"
+            id="editor-title"
+            placeholder="e.g. What I learned about fork()"
+            autocomplete="off"
+          />
+        </div>
+        <div>
+          <label class="editor-field-label" for="editor-body-text"
+            >Content:</label
+          >
+          <textarea
+            id="editor-body-text"
+            placeholder="Write your entry here. Plain text or basic HTML both work."
+          ></textarea>
+          <div class="editor-hint">
+            Tip: wrap code in &lt;code&gt; tags. Paragraphs separated by blank
+            lines auto-format.
+          </div>
+        </div>
+      </div>
+      <div class="editor-actions">
+        <button class="editor-btn" onclick="closeEditor()">Cancel</button>
+        <button class="editor-btn primary" onclick="saveEntry()">
+          Save Entry
+        </button>
+      </div>
+    </div>
+
+    <!-- START MENU -->
+    <div id="start-menu">
+      <div class="sm-sidebar"><span>0xzoowa</span></div>
+      <div class="sm-items">
+        <div class="sm-item" tabindex="0" onclick="smOpen('about')">
+          <span class="sm-ico">💾</span> About
+        </div>
+        <div class="sm-item" tabindex="0" onclick="smOpen('projects')">
+          <span class="sm-ico">📁</span> Projects
+        </div>
+        <div class="sm-item" tabindex="0" onclick="smOpen('journal')">
+          <span class="sm-ico">📓</span> Journal
+        </div>
+        <div class="sm-item" tabindex="0" onclick="smOpen('essays')">
+          <span class="sm-ico">📝</span> Essays
+        </div>
+        <div class="sm-divider"></div>
+        <div class="sm-item" tabindex="0" onclick="smGithub()">
+          <span class="sm-ico">🔗</span> GitHub
+        </div>
+        <div class="sm-divider"></div>
+        <div class="sm-item sm-shutdown" tabindex="0" onclick="smShutdown()">
+          <span class="sm-ico">⏻</span> Shut Down…
+        </div>
+      </div>
+    </div>
+
+    <!-- TASKBAR -->
+    <div id="taskbar">
+      <button id="start-btn">⊞ Start</button>
+      <div
+        id="taskbar-items"
+        style="display: flex; gap: 4px; flex: 1; overflow: hidden"
+      ></div>
+      <div id="clock"></div>
+    </div>
+
+    <script>
+      /* =========================================================
+       STORAGE HELPERS
+    ========================================================= */
+      const STORAGE_KEY = "zoowa_journal_entries";
+
+      function loadLocalEntries() {
+        try {
+          return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        } catch {
+          return [];
+        }
+      }
+
+      function saveLocalEntries(entries) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+      }
+
+      function deleteLocalEntry(id) {
+        const entries = loadLocalEntries().filter((e) => e.id !== id);
+        saveLocalEntries(entries);
+      }
+
+      /* =========================================================
+       ADMIN MODE
+    ========================================================= */
+      let adminMode = false;
+
+      function toggleAdminMode() {
+        adminMode = !adminMode;
+        document.body.classList.toggle("admin-mode", adminMode);
+        if (adminMode) {
+          openEditor();
+        }
+      }
+
+      document.addEventListener("keydown", (e) => {
+        if (e.ctrlKey && e.shiftKey && e.key === "J") {
+          e.preventDefault();
+          toggleAdminMode();
+        }
+      });
+
+      /* =========================================================
+       EDITOR
+    ========================================================= */
+      const editorWindow = document.getElementById("editor-window");
+      const editorTitleEl = document.getElementById("editor-title");
+      const editorBodyEl = document.getElementById("editor-body-text");
+
+      function openEditor() {
+        editorTitleEl.value = "";
+        editorBodyEl.value = "";
+        editorWindow.classList.add("open");
+        editorWindow.style.zIndex = 99900;
+        setTimeout(() => editorTitleEl.focus(), 50);
+        makeDraggable(editorWindow, document.getElementById("editor-titlebar"));
+      }
+
+      function closeEditor() {
+        editorWindow.classList.remove("open");
+      }
+
+      function saveEntry() {
+        const title = editorTitleEl.value.trim();
+        const body = editorBodyEl.value.trim();
+        if (!title) {
+          editorTitleEl.focus();
+          editorTitleEl.style.borderColor = "#c00";
+          setTimeout(() => (editorTitleEl.style.borderColor = ""), 800);
+          return;
+        }
+        if (!body) {
+          editorBodyEl.focus();
+          editorBodyEl.style.borderColor = "#c00";
+          setTimeout(() => (editorBodyEl.style.borderColor = ""), 800);
+          return;
+        }
+
+        const id = "local-" + Date.now();
+        const entry = {
+          id,
+          title,
+          body,
+          date: new Date().toISOString(),
+          source: "local",
+        };
+
+        const entries = loadLocalEntries();
+        entries.unshift(entry);
+        saveLocalEntries(entries);
+
+        closeEditor();
+        showSaveFlash();
+
+        // Refresh journal window if open
+        if (openWindows["journal"]) {
+          closeWindow("journal");
+          setTimeout(() => openWindow("journal"), 60);
+        }
+      }
+
+      function showSaveFlash() {
+        const el = document.getElementById("save-flash");
+        el.style.display = "block";
+        setTimeout(() => {
+          el.style.display = "none";
+        }, 2200);
+      }
+
+      // Allow saving with Ctrl+Enter inside editor
+      editorBodyEl.addEventListener("keydown", (e) => {
+        if (e.ctrlKey && e.key === "Enter") {
+          e.preventDefault();
+          saveEntry();
+        }
+      });
+
+      /* =========================================================
+       DRAGGABLE (generic, for editor window)
+    ========================================================= */
+      function makeDraggable(win, handle) {
+        // Remove old listeners by cloning
+        const newHandle = handle.cloneNode(true);
+        handle.parentNode.replaceChild(newHandle, handle);
+
+        let ox = 0,
+          oy = 0,
+          dragging = false;
+        newHandle.addEventListener("mousedown", (e) => {
+          if (e.target.classList.contains("win-btn")) return;
+          dragging = true;
+          // If centered via transform, get actual rect
+          const rect = win.getBoundingClientRect();
+          win.style.left = rect.left + "px";
+          win.style.top = rect.top + "px";
+          win.style.transform = "none";
+          ox = e.clientX - win.offsetLeft;
+          oy = e.clientY - win.offsetTop;
+          e.preventDefault();
+        });
+        document.addEventListener("mousemove", (e) => {
+          if (!dragging) return;
+          const x = Math.max(
+            0,
+            Math.min(e.clientX - ox, window.innerWidth - win.offsetWidth),
+          );
+          const y = Math.max(
+            0,
+            Math.min(
+              e.clientY - oy,
+              window.innerHeight - 34 - win.offsetHeight,
+            ),
+          );
+          win.style.left = x + "px";
+          win.style.top = y + "px";
+        });
+        document.addEventListener("mouseup", () => {
+          dragging = false;
+        });
+      }
+
+      /* =========================================================
+       START MENU
+    ========================================================= */
+      const startMenu = document.getElementById("start-menu");
+      const startBtn = document.getElementById("start-btn");
+
+      function toggleStartMenu(e) {
+        e.stopPropagation();
+        startMenu.classList.toggle("open");
+        startBtn.classList.toggle("active");
+      }
+      function closeStartMenu() {
+        startMenu.classList.remove("open");
+        startBtn.classList.remove("active");
+      }
+      startBtn.addEventListener("click", toggleStartMenu);
+      document.addEventListener("click", (e) => {
+        if (!startMenu.contains(e.target) && e.target !== startBtn)
+          closeStartMenu();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeStartMenu();
+      });
+
+      function smOpen(type) {
+        closeStartMenu();
+        openWindow(type);
+      }
+      function smGithub() {
+        closeStartMenu();
+        window.open("https://github.com/0xzoowa", "_blank");
+      }
+      function smShutdown() {
+        closeStartMenu();
+        document.body.style.transition = "opacity 0.6s";
+        document.body.style.opacity = "0";
+        setTimeout(() => {
+          document.body.innerHTML = `<div style="background:#000;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;font-family:'VT323',monospace;font-size:24px;color:#c0c0c0;flex-direction:column;gap:12px;"><div>It is now safe to turn off your computer.</div><div style="font-size:14px;opacity:0.45;font-family:'Share Tech Mono',monospace">(refresh to reboot)</div></div>`;
+          document.body.style.opacity = "1";
+        }, 600);
+      }
+
+      /* =========================================================
+       DATA
+    ========================================================= */
+      const BUILTIN_JOURNAL = [
+        {
+          id: "inode",
+          title: "What a File Descriptor Really Is",
+          source: "builtin",
+          content: `<h3>What a File Descriptor Really Is</h3>
+        <p>A file descriptor is an index into a per-process open-file table. It is not the inode itself — it references kernel structures that point to the inode.</p>
+        <p>When you call <code>open()</code>, the kernel allocates a file description object, inserts it into the system-wide file table, then returns an fd (integer) that indexes into your process's descriptor table.</p>`,
+        },
+        {
+          id: "disk",
+          title: "A Disk Doesn't Know About Files",
+          source: "builtin",
+          content: `<h3>A Disk Doesn't Know About Files</h3>
+        <p>A disk stores raw bytes in numbered sectors. Files, directories, and inodes are abstractions entirely invented by the filesystem layer sitting above the block device.</p>
+        <p>The OS translates <code>read(fd, buf, n)</code> into LBA sector reads — the disk just answers "give me block 14203".</p>`,
+        },
+        {
+          id: "mmap",
+          title: "mmap and the Page Cache",
+          source: "builtin",
+          content: `<h3>mmap and the Page Cache</h3>
+        <p><code>mmap()</code> maps a file into virtual address space. Reads hit the page cache; writes are lazy — the OS decides when to flush them to disk.</p>
+        <p>This is why <code>mmap</code> can outperform <code>read()</code>: you skip the kernel-to-user copy entirely.</p>`,
+        },
+      ];
+
+      const DATA = {
+        about: {
+          title: "about.txt",
+          icon: "💾",
+          content: () => `
+        <div class="content">
+          <h3>C:\\Users\\zoowa> whoami</h3>
+          <div class="prompt-line"><span class="label">name:</span><span class="val">Omozuwa Omede</span></div>
+          <div class="prompt-line"><span class="label">costume:</span><span class="val">Backend Engineer</span></div>
+          <div class="prompt-line"><span class="label">focus:</span><span class="val">OS · Systems Architecture · Startups</span></div>
+          <div class="prompt-line"><span class="label">stack:</span><span class="val">C · Assembly · C# · Javascript</span></div>
+          <div class="prompt-footer">
+            I am a builder. Builders don't think in roles. They think in outcomes. They think in systems.
+            The role is just the costume you wear to get the work done. And over the course of a building journey, you wear many costumes.
+          </div>
+          <div class="prompt-footer">
+            Current preoccupation: Exploring computers from first principles.<br>
+          </div>
+        </div>`,
+        },
+
+        projects: {
+          title: "projects.dir",
+          icon: "📁",
+          items: [
+            {
+              id: "compiler",
+              title: "Jack Compiler",
+              content: `<h3>Jack Compiler</h3>
+            <p>Front-end compiler for the Jack programming language from Nand2Tetris. Implements lexical analysis, parsing, and code generation to translate high-level Jack programs into stack-based VM instructions.</p>
+            <pre><code>// Jack source\nlet x = y + 2;\n\n// Generated VM code\npush local 1\npush constant 2\nadd\npop local 0</code></pre>
+            <p><a href="https://github.com/0xzoowa/JackCompiler" target="_blank">→ View Repository</a></p>`,
+            },
+            {
+              id: "vm",
+              title: "VM Translator (C)",
+              content: `<h3>VM Translator</h3>
+            <p>Implements the Hack Virtual Machine specified in Nand2Tetris. Translates stack-based VM instructions into Hack assembly while managing the stack, memory segments, branching, and function calls.</p>
+            <pre><code>push constant 7\npush constant 8\nadd</code></pre>
+            <p><a href="https://github.com/0xzoowa/virtual-machine" target="_blank">→ View Repository</a></p>`,
+            },
+            {
+              id: "assembler",
+              title: "Hack Assembler",
+              content: `<h3>Hack Assembler</h3>
+            <p>Assembler for the Hack computer platform. Converts Hack assembly instructions into 16-bit machine code executable by the Hack CPU.</p>
+            <pre><code>// Hack assembly\n@2\nD=A\n\n// Machine code\n0000000000000010\n1110110000010000</code></pre>
+            <p><a href="https://github.com/0xzoowa/hack-assembler" target="_blank">→ View Repository</a></p>`,
+            },
+          ],
+        },
+
+        essays: {
+          title: "essays.md",
+          icon: "📝",
+          items: [
+            {
+              id: "compilation",
+              title: "From Code to Machine",
+              content: `<p><em>Engineering Notes — July, 2025</em></p>
+            <h3>From High-Level Code to Machine Instructions</h3>
+            <h4>1. The Compiler</h4>
+            <p>The first stage of the pipeline is the Jack compiler. At a high level, the compiler performs three tasks: <strong>Lexical Analysis</strong>, <strong>Parsing</strong>, and <strong>Code Generation</strong> — outputting VM instructions rather than machine code directly.</p>
+            <pre><code>let x = y + 2;\n// becomes:\npush local 1\npush constant 2\nadd\npop local 0</code></pre>
+            <h4>2. The Virtual Machine</h4>
+            <p>The VM Translator converts stack-based VM instructions into Hack assembly. This stage revealed how function calls, variable storage, and arithmetic all reduce to carefully orchestrated stack and memory operations.</p>
+            <h4>3. The Assembler</h4>
+            <p>The assembler translates Hack assembly into 16-bit binary instructions. It uses a two-pass process: first recording label locations, then translating and assigning memory addresses.</p>
+            <pre><code>Jack → VM code → Hack assembly → Machine code</code></pre>`,
+            },
+          ],
+        },
+      };
+
+      /* =========================================================
+       JOURNAL: merge builtin + local entries
+    ========================================================= */
+      function getJournalItems() {
+        const local = loadLocalEntries();
+        // Build merged list: local first (newest), then builtins
+        const localItems = local.map((e) => ({
+          id: e.id,
+          title: e.title,
+          source: "local",
+          date: e.date,
+          content: `<h3>${escapeHtml(e.title)}</h3>
+          <p style="font-size:11px;color:#888;margin-bottom:10px;">${formatDate(e.date)}</p>
+          ${formatBody(e.body)}`,
+        }));
+        return [...localItems, ...BUILTIN_JOURNAL];
+      }
+
+      function escapeHtml(s) {
+        return s
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      function formatBody(text) {
+        // Convert plain text paragraphs to <p> tags; preserve any existing HTML
+        if (text.includes("<")) return text; // has HTML, use as-is
+        return text
+          .split(/\n\n+/)
+          .map((p) => `<p>${escapeHtml(p).replace(/\n/g, "<br>")}</p>`)
+          .join("");
+      }
+
+      function formatDate(iso) {
+        try {
+          return new Date(iso).toLocaleDateString("en-GB", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          });
+        } catch {
+          return "";
+        }
+      }
+
+      /* =========================================================
+       WINDOW MANAGER
+    ========================================================= */
+      let zTop = 10;
+      const openWindows = {};
+      const isMobile = () => window.innerWidth <= 600;
+
+      function buildWindow(id, title, bodyHTML, width = 460, height = 320) {
+        const win = document.createElement("div");
+        win.className = "window";
+        win.id = "win-" + id;
+        const offset = (Object.keys(openWindows).length % 6) * 22;
+        if (!isMobile()) {
+          win.style.width = Math.min(width, window.innerWidth - 20) + "px";
+          win.style.left = 120 + offset + "px";
+          win.style.top = 80 + offset + "px";
+        }
+        win.style.zIndex = ++zTop;
+        win.innerHTML = `
+        <div class="title-bar">
+          <span class="title-text">${title}</span>
+          <div class="win-btns">
+            <div class="win-btn" title="Minimize" onclick="minimizeWindow('${id}')">_</div>
+            <div class="win-btn" title="Maximize" onclick="maximizeWindow('${id}')">□</div>
+            <div class="win-btn" title="Close" onclick="closeWindow('${id}')">✕</div>
+          </div>
+        </div>
+        <div class="window-body" style="${!isMobile() ? "max-height:" + height + "px" : ""}">
+          ${bodyHTML}
+        </div>
+        <div class="resize-handle" data-win="${id}"></div>
+      `;
+        document.getElementById("desktop").appendChild(win);
+        if (isMobile()) {
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => win.classList.add("open")),
+          );
+        }
+        makeInteractive(win, id);
+        return win;
+      }
+
+      function openWindow(type) {
+        if (type === "journal") {
+          openJournalWindow();
+          return;
+        }
+        const cfg = DATA[type];
+        if (!cfg) return;
+        const id = type;
+        if (openWindows[id]) {
+          if (openWindows[id].minimized) restoreWindow(id);
+          focusWindow(id);
+          return;
+        }
+        let bodyHTML = cfg.content
+          ? cfg.content()
+          : `<div class="content">${renderList(cfg.items, type)}</div>`;
+        const win = buildWindow(id, cfg.title, bodyHTML);
+        openWindows[id] = { el: win, minimized: false, title: cfg.title };
+        addTaskbarBtn(id, cfg.icon + " " + cfg.title);
+      }
+
+      function openJournalWindow() {
+        const id = "journal";
+        if (openWindows[id]) {
+          if (openWindows[id].minimized) restoreWindow(id);
+          focusWindow(id);
+          return;
+        }
+        const items = getJournalItems();
+        const listHTML = renderJournalList(items);
+        const win = buildWindow(
+          id,
+          "journal.log",
+          `<div class="content">${listHTML}</div>`,
+        );
+        openWindows[id] = { el: win, minimized: false, title: "journal.log" };
+        addTaskbarBtn(id, "📓 journal.log");
+      }
+
+      function renderJournalList(items) {
+        if (!items.length)
+          return '<p style="color:#888;font-size:12px;">No entries yet. Press Ctrl+Shift+J to write one.</p>';
+        return `<ul style="list-style:none;padding:0">${items
+          .map((item) => {
+            const badge =
+              item.source === "local"
+                ? `<span class="entry-source-badge local">local</span>`
+                : `<span class="entry-source-badge builtin">builtin</span>`;
+            const dateStr = item.date
+              ? `<span class="entry-meta">${formatDate(item.date)}</span>`
+              : "";
+            const delBtn =
+              item.source === "local"
+                ? `<button class="delete-btn" onclick="confirmDelete('${item.id}')">del</button>`
+                : "";
+            return `<li style="margin-bottom:10px;">
+          <div class="journal-entry-row">
+            <div style="flex:1">
+              <a href="#" onclick="event.preventDefault();openJournalEntry('${item.id}')">${escapeHtml(item.title)}</a>${badge}
+              ${dateStr}
+            </div>
+            ${delBtn}
+          </div>
+        </li>`;
+          })
+          .join("")}</ul>`;
+      }
+
+      function openJournalEntry(itemId) {
+        // Check local first, then builtin
+        const local = loadLocalEntries().find((e) => e.id === itemId);
+        const builtin = BUILTIN_JOURNAL.find((e) => e.id === itemId);
+        const entry = local || builtin;
+        if (!entry) return;
+
+        const id = "journal-" + itemId;
+        if (openWindows[id]) {
+          restoreWindow(id);
+          focusWindow(id);
+          return;
+        }
+
+        let content;
+        if (local) {
+          content = `<h3>${escapeHtml(local.title)}</h3>
+          <p style="font-size:11px;color:#888;margin-bottom:10px;">${formatDate(local.date)}</p>
+          ${formatBody(local.body)}`;
+        } else {
+          content = builtin.content;
+        }
+
+        const win = buildWindow(
+          id,
+          entry.title,
+          `<div class="content">${content}</div>`,
+          440,
+          280,
+        );
+        openWindows[id] = { el: win, minimized: false, title: entry.title };
+        addTaskbarBtn(id, "📓 " + entry.title);
+      }
+
+      function confirmDelete(id) {
+        if (!confirm("Delete this entry?")) return;
+        deleteLocalEntry(id);
+        // Close the entry window if open
+        if (openWindows["journal-" + id]) closeWindow("journal-" + id);
+        // Refresh journal list
+        if (openWindows["journal"]) {
+          closeWindow("journal");
+          setTimeout(() => openJournalWindow(), 60);
+        }
+      }
+
+      function openEntry(type, itemId) {
+        const cfg = DATA[type];
+        if (!cfg || !cfg.items) return;
+        const item = cfg.items.find((i) => i.id === itemId);
+        if (!item) return;
+        const id = type + "-" + itemId;
+        if (openWindows[id]) {
+          restoreWindow(id);
+          focusWindow(id);
+          return;
+        }
+        const win = buildWindow(
+          id,
+          item.title,
+          `<div class="content">${item.content}</div>`,
+          440,
+          280,
+        );
+        openWindows[id] = { el: win, minimized: false, title: item.title };
+        addTaskbarBtn(id, DATA[type].icon + " " + item.title);
+      }
+
+      function closeWindow(id) {
+        const w = openWindows[id];
+        if (!w) return;
+        const el = w.el;
+        if (isMobile()) {
+          el.classList.remove("open");
+          el.addEventListener("transitionend", () => el.remove(), {
+            once: true,
+          });
+        } else {
+          el.remove();
+        }
+        delete openWindows[id];
+        removeTaskbarBtn(id);
+      }
+
+      function minimizeWindow(id) {
+        const w = openWindows[id];
+        if (!w) return;
+        w.el.classList.add("minimized");
+        w.minimized = true;
+        updateTaskbarBtn(id, false);
+      }
+      function restoreWindow(id) {
+        const w = openWindows[id];
+        if (!w) return;
+        w.el.classList.remove("minimized");
+        w.minimized = false;
+        updateTaskbarBtn(id, true);
+        if (isMobile()) {
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => w.el.classList.add("open")),
+          );
+        }
+      }
+      function maximizeWindow(id) {
+        const w = openWindows[id];
+        if (!w) return;
+        const el = w.el;
+        if (w.maximized) {
+          Object.assign(el.style, w._savedStyle);
+          w.maximized = false;
+        } else {
+          w._savedStyle = {
+            left: el.style.left,
+            top: el.style.top,
+            width: el.style.width,
+          };
+          el.style.left = "0";
+          el.style.top = "0";
+          el.style.width = "100vw";
+          el.querySelector(".window-body").style.maxHeight =
+            window.innerHeight - 34 - 30 + "px";
+          w.maximized = true;
+        }
+        focusWindow(id);
+      }
+      function focusWindow(id) {
+        const w = openWindows[id];
+        if (!w) return;
+        w.el.style.zIndex = ++zTop;
+      }
+
+      function renderList(items, type) {
+        return `<ul>${items
+          .map(
+            (item) =>
+              `<li><a href="#" onclick="event.preventDefault();openEntry('${type}','${item.id}')">${item.title}</a></li>`,
+          )
+          .join("")}</ul>`;
+      }
+
+      /* =========================================================
+       TASKBAR
+    ========================================================= */
+      function addTaskbarBtn(id, label) {
+        const btn = document.createElement("button");
+        btn.className = "taskbar-btn active";
+        btn.id = "tbtn-" + id;
+        btn.textContent = label;
+        btn.onclick = () => {
+          const w = openWindows[id];
+          if (!w) return;
+          if (w.minimized) {
+            restoreWindow(id);
+            focusWindow(id);
+          } else if (parseInt(w.el.style.zIndex) === zTop) {
+            minimizeWindow(id);
+          } else {
+            focusWindow(id);
+          }
+        };
+        document.getElementById("taskbar-items").appendChild(btn);
+      }
+      function removeTaskbarBtn(id) {
+        const btn = document.getElementById("tbtn-" + id);
+        if (btn) btn.remove();
+      }
+      function updateTaskbarBtn(id, active) {
+        const btn = document.getElementById("tbtn-" + id);
+        if (!btn) return;
+        btn.classList.toggle("active", active);
+      }
+
+      /* =========================================================
+       DRAGGING WINDOWS
+    ========================================================= */
+      function makeInteractive(win, id) {
+        win.addEventListener("mousedown", () => focusWindow(id));
+        win.addEventListener("touchstart", () => focusWindow(id), {
+          passive: true,
+        });
+        if (isMobile()) return;
+        const bar = win.querySelector(".title-bar");
+        let ox = 0,
+          oy = 0,
+          dragging = false;
+        bar.addEventListener("mousedown", (e) => {
+          if (e.target.classList.contains("win-btn")) return;
+          dragging = true;
+          ox = e.clientX - win.offsetLeft;
+          oy = e.clientY - win.offsetTop;
+          e.preventDefault();
+        });
+        document.addEventListener("mousemove", (e) => {
+          if (!dragging) return;
+          const x = Math.max(
+            0,
+            Math.min(e.clientX - ox, window.innerWidth - win.offsetWidth),
+          );
+          const y = Math.max(
+            0,
+            Math.min(
+              e.clientY - oy,
+              window.innerHeight - 34 - win.offsetHeight,
+            ),
+          );
+          win.style.left = x + "px";
+          win.style.top = y + "px";
+        });
+        document.addEventListener("mouseup", () => {
+          dragging = false;
+        });
+        const rh = win.querySelector(".resize-handle");
+        let resizing = false,
+          rox = 0,
+          roy = 0,
+          rw = 0,
+          rh0 = 0;
+        rh.addEventListener("mousedown", (e) => {
+          resizing = true;
+          rox = e.clientX;
+          roy = e.clientY;
+          rw = win.offsetWidth;
+          rh0 = win.offsetHeight;
+          e.preventDefault();
+          e.stopPropagation();
+        });
+        document.addEventListener("mousemove", (e) => {
+          if (!resizing) return;
+          win.style.width = Math.max(280, rw + (e.clientX - rox)) + "px";
+          win.querySelector(".window-body").style.maxHeight =
+            Math.max(180, rh0 + (e.clientY - roy)) - 32 + "px";
+        });
+        document.addEventListener("mouseup", () => {
+          resizing = false;
+        });
+      }
+
+      /* =========================================================
+       WALLPAPER
+    ========================================================= */
+      (function drawWallpaper() {
+        const canvas = document.getElementById("wallpaper");
+        const ctx = canvas.getContext("2d");
+        let W,
+          H,
+          t = 0;
+        const AVATAR = [
+          [0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0],
+          [0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0],
+          [0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 2, 0, 0, 0, 0],
+          [0, 0, 0, 2, 1, 4, 1, 1, 1, 4, 1, 2, 0, 0, 0, 0],
+          [0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 2, 0, 0, 0, 0],
+          [0, 0, 0, 2, 1, 1, 5, 1, 5, 1, 1, 2, 0, 0, 0, 0],
+          [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+          [0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0],
+          [0, 3, 3, 0, 3, 3, 3, 3, 3, 3, 3, 0, 3, 3, 0, 0],
+          [3, 3, 0, 0, 3, 3, 3, 3, 3, 3, 3, 0, 0, 3, 3, 0],
+          [0, 0, 0, 0, 4, 3, 3, 3, 3, 3, 4, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 4, 4, 3, 3, 3, 4, 4, 0, 0, 0, 0, 0],
+          [0, 0, 0, 4, 4, 0, 4, 4, 4, 0, 4, 4, 0, 0, 0, 0],
+          [0, 0, 4, 4, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0],
+          [0, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0],
+        ];
+        const PALETTE = {
+          1: "#f5c8a0",
+          2: "#1a1a2e",
+          3: "#1a6fd4",
+          4: "#0a0a1a",
+          5: "#ffffff",
+          6: "#5bb8ff",
+        };
+        let stars = [],
+          particles = [];
+        const SNIPPETS = [
+          "{}",
+          "[]",
+          "()",
+          "<>",
+          "//",
+          "0x",
+          "&&",
+          "||",
+          "fn",
+          "if",
+          ">>",
+          "<<",
+          "+=",
+          "!=",
+          "::",
+          "->",
+        ];
+
+        function initStars() {
+          stars = Array.from({ length: 120 }, () => ({
+            x: Math.random() * W,
+            y: Math.random() * H * 0.75,
+            r: Math.random() * 1.5 + 0.3,
+            speed: Math.random() * 0.3 + 0.05,
+            phase: Math.random() * Math.PI * 2,
+            color: ["#fff", "#c8e6ff", "#ffe0a0", "#ffc8c8"][
+              Math.floor(Math.random() * 4)
+            ],
+          }));
+        }
+        function initParticles() {
+          particles = Array.from({ length: 28 }, (_, i) => ({
+            x: Math.random() * W,
+            y: Math.random() * H,
+            vx: (Math.random() - 0.5) * 0.4,
+            vy: -Math.random() * 0.5 - 0.1,
+            text: SNIPPETS[i % SNIPPETS.length],
+            alpha: Math.random() * 0.4 + 0.1,
+            size: Math.floor(Math.random() * 3) * 2 + 8,
+            color: ["#5bb8ff", "#6effa0", "#ffe08a", "#d48aff"][
+              Math.floor(Math.random() * 4)
+            ],
+          }));
+        }
+        function drawGrid() {
+          const horizon = H * 0.62,
+            vx = W * 0.5;
+          ctx.save();
+          ctx.strokeStyle = "rgba(26,111,212,0.22)";
+          ctx.lineWidth = 1;
+          for (let r = 0; r <= 10; r++) {
+            const p = r / 10,
+              y = horizon + (H - horizon) * p,
+              s = 0.3 + p * 0.7;
+            ctx.beginPath();
+            ctx.moveTo(vx - W * s, y);
+            ctx.lineTo(vx + W * s, y);
+            ctx.stroke();
+          }
+          for (let c = -14; c <= 14; c++) {
+            ctx.beginPath();
+            ctx.moveTo(vx + c * (W / 14) * 0.35, horizon);
+            ctx.lineTo(vx + c * (W / 14) * 2.2, H + 10);
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+        function drawCity(yBase) {
+          ctx.save();
+          ctx.fillStyle = "#10122a";
+          const buildings = [
+            { x: 0.05, w: 0.06, h: 0.12 },
+            { x: 0.1, w: 0.04, h: 0.2 },
+            { x: 0.13, w: 0.07, h: 0.15 },
+            { x: 0.19, w: 0.03, h: 0.28 },
+            { x: 0.21, w: 0.06, h: 0.18 },
+            { x: 0.26, w: 0.04, h: 0.24 },
+            { x: 0.3, w: 0.08, h: 0.14 },
+            { x: 0.37, w: 0.03, h: 0.32 },
+            { x: 0.39, w: 0.06, h: 0.22 },
+            { x: 0.55, w: 0.06, h: 0.22 },
+            { x: 0.6, w: 0.03, h: 0.32 },
+            { x: 0.62, w: 0.08, h: 0.14 },
+            { x: 0.7, w: 0.04, h: 0.24 },
+            { x: 0.73, w: 0.06, h: 0.18 },
+            { x: 0.78, w: 0.03, h: 0.28 },
+            { x: 0.8, w: 0.07, h: 0.15 },
+            { x: 0.86, w: 0.04, h: 0.2 },
+            { x: 0.89, w: 0.06, h: 0.12 },
+          ];
+          buildings.forEach((b) =>
+            ctx.fillRect(b.x * W, yBase - b.h * H, b.w * W, b.h * H + 2),
+          );
+          ctx.fillStyle = "rgba(255,220,100,0.55)";
+          buildings.forEach((b) => {
+            const bx = b.x * W,
+              bw = b.w * W,
+              bh = b.h * H,
+              by = yBase - bh;
+            const cols = Math.max(1, Math.floor(bw / 7)),
+              rows = Math.max(1, Math.floor(bh / 9));
+            for (let r = 0; r < rows; r++)
+              for (let c = 0; c < cols; c++)
+                if (Math.random() < 0.45)
+                  ctx.fillRect(bx + c * 7 + 2, by + r * 9 + 2, 3, 4);
+          });
+          ctx.restore();
+        }
+        function drawAvatar(cx, cy, scale, bob) {
+          const ox = cx - (AVATAR[0].length * scale) / 2,
+            oy = cy - (AVATAR.length * scale) / 2 + bob;
+          const grd = ctx.createRadialGradient(
+            cx,
+            cy + bob,
+            0,
+            cx,
+            cy + bob,
+            scale * 14,
+          );
+          grd.addColorStop(0, "rgba(91,184,255,0.18)");
+          grd.addColorStop(1, "rgba(91,184,255,0)");
+          ctx.fillStyle = grd;
+          ctx.fillRect(
+            ox - scale * 4,
+            oy - scale * 2,
+            AVATAR[0].length * scale + scale * 8,
+            AVATAR.length * scale + scale * 4,
+          );
+          AVATAR.forEach((row, ry) =>
+            row.forEach((cell, cx2) => {
+              if (!cell) return;
+              ctx.fillStyle = PALETTE[cell];
+              ctx.fillRect(
+                ox + cx2 * scale,
+                oy + ry * scale,
+                scale - 0.5,
+                scale - 0.5,
+              );
+            }),
+          );
+        }
+        function drawMoon() {
+          const mx = W * 0.82,
+            my = H * 0.14,
+            r = Math.min(W, H) * 0.055;
+          const grd = ctx.createRadialGradient(mx, my, 0, mx, my, r * 3);
+          grd.addColorStop(0, "rgba(200,230,255,0.18)");
+          grd.addColorStop(1, "rgba(200,230,255,0)");
+          ctx.fillStyle = grd;
+          ctx.beginPath();
+          ctx.arc(mx, my, r * 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#d8eeff";
+          ctx.beginPath();
+          ctx.arc(mx, my, r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "rgba(150,190,230,0.5)";
+          [
+            [0.3, -0.2, 0.15],
+            [-0.25, 0.1, 0.1],
+            [0.1, 0.35, 0.08],
+          ].forEach(([dx, dy, cr]) => {
+            ctx.beginPath();
+            ctx.arc(mx + dx * r, my + dy * r, cr * r, 0, Math.PI * 2);
+            ctx.fill();
+          });
+        }
+        function draw() {
+          t += 0.012;
+          ctx.clearRect(0, 0, W, H);
+          const sky = ctx.createLinearGradient(0, 0, 0, H * 0.65);
+          sky.addColorStop(0, "#04040f");
+          sky.addColorStop(0.4, "#0a0a2a");
+          sky.addColorStop(1, "#12183a");
+          ctx.fillStyle = sky;
+          ctx.fillRect(0, 0, W, H * 0.65);
+          const gnd = ctx.createLinearGradient(0, H * 0.62, 0, H);
+          gnd.addColorStop(0, "#080814");
+          gnd.addColorStop(1, "#050508");
+          ctx.fillStyle = gnd;
+          ctx.fillRect(0, H * 0.62, W, H * 0.38);
+          drawMoon();
+          stars.forEach((s) => {
+            const tw = 0.5 + 0.5 * Math.sin(t * s.speed * 8 + s.phase);
+            ctx.globalAlpha = tw * 0.85;
+            ctx.fillStyle = s.color;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+            ctx.fill();
+          });
+          ctx.globalAlpha = 1;
+          drawGrid();
+          drawCity(H * 0.625);
+          ctx.fillStyle = "rgba(0,0,0,0.06)";
+          for (let y = 0; y < H * 0.65; y += 4) ctx.fillRect(0, y, W, 1);
+          ctx.save();
+          particles.forEach((p) => {
+            p.x += p.vx;
+            p.y += p.vy;
+            if (p.y < -20) {
+              p.y = H * 0.9;
+              p.x = Math.random() * W;
+            }
+            if (p.x < -30) p.x = W + 10;
+            if (p.x > W + 30) p.x = -10;
+            ctx.globalAlpha = p.alpha * (0.6 + 0.4 * Math.sin(t * 2 + p.x));
+            ctx.fillStyle = p.color;
+            ctx.font = `bold ${p.size}px 'Share Tech Mono',monospace`;
+            ctx.fillText(p.text, p.x, p.y);
+          });
+          ctx.globalAlpha = 1;
+          ctx.restore();
+          const as = Math.max(10, Math.min(W, H) * 0.028),
+            bob = Math.sin(t * 1.4) * as * 0.4;
+          drawAvatar(W * 0.5, H * 0.58, as, bob);
+          ctx.save();
+          ctx.globalAlpha = 0.25 + 0.05 * Math.sin(t * 1.4);
+          ctx.fillStyle = "#000";
+          ctx.beginPath();
+          ctx.ellipse(W * 0.5, H * 0.625, as * 5, as * 1, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+          const hg = ctx.createLinearGradient(0, H * 0.58, 0, H * 0.66);
+          hg.addColorStop(0, "rgba(26,111,212,0)");
+          hg.addColorStop(0.5, "rgba(26,111,212,0.12)");
+          hg.addColorStop(1, "rgba(26,111,212,0)");
+          ctx.fillStyle = hg;
+          ctx.fillRect(0, H * 0.58, W, H * 0.08);
+          requestAnimationFrame(draw);
+        }
+        function resize() {
+          W = canvas.width = window.innerWidth;
+          H = canvas.height = window.innerHeight;
+          initStars();
+          initParticles();
+        }
+        window.addEventListener("resize", resize);
+        resize();
+        draw();
+      })();
+
+      /* =========================================================
+       CLOCK
+    ========================================================= */
+      function updateClock() {
+        const n = new Date();
+        document.getElementById("clock").textContent =
+          String(n.getHours()).padStart(2, "0") +
+          ":" +
+          String(n.getMinutes()).padStart(2, "0");
+      }
+      updateClock();
+      setInterval(updateClock, 15000);
+
+      /* =========================================================
+       DRAGGABLE ICONS
+    ========================================================= */
+      (function initIconDrag() {
+        document.querySelectorAll(".icon").forEach((icon) => {
+          let startX,
+            startY,
+            origLeft,
+            origTop,
+            moved = false;
+          const THRESH = 5;
+          icon.addEventListener("mousedown", (e) => {
+            if (e.button !== 0) return;
+            startX = e.clientX;
+            startY = e.clientY;
+            origLeft = icon.offsetLeft;
+            origTop = icon.offsetTop;
+            moved = false;
+            function onMove(e) {
+              const dx = e.clientX - startX,
+                dy = e.clientY - startY;
+              if (!moved && Math.hypot(dx, dy) < THRESH) return;
+              moved = true;
+              icon.classList.add("dragging");
+              icon.style.left =
+                Math.max(
+                  0,
+                  Math.min(origLeft + dx, window.innerWidth - icon.offsetWidth),
+                ) + "px";
+              icon.style.top =
+                Math.max(
+                  0,
+                  Math.min(
+                    origTop + dy,
+                    window.innerHeight - 34 - icon.offsetHeight,
+                  ),
+                ) + "px";
+            }
+            function onUp() {
+              document.removeEventListener("mousemove", onMove);
+              document.removeEventListener("mouseup", onUp);
+              icon.classList.remove("dragging");
+              if (!moved) openWindow(icon.dataset.target);
+            }
+            document.addEventListener("mousemove", onMove);
+            document.addEventListener("mouseup", onUp);
+            e.preventDefault();
+          });
+          icon.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ")
+              openWindow(icon.dataset.target);
+          });
+          icon.addEventListener(
+            "touchstart",
+            (e) => {
+              const t = e.touches[0];
+              startX = t.clientX;
+              startY = t.clientY;
+              origLeft = icon.offsetLeft;
+              origTop = icon.offsetTop;
+              moved = false;
+              e.stopPropagation();
+            },
+            { passive: true },
+          );
+          icon.addEventListener(
+            "touchmove",
+            (e) => {
+              const t = e.touches[0],
+                dx = t.clientX - startX,
+                dy = t.clientY - startY;
+              if (!moved && Math.hypot(dx, dy) < THRESH) return;
+              moved = true;
+              icon.classList.add("dragging");
+              icon.style.left =
+                Math.max(
+                  0,
+                  Math.min(origLeft + dx, window.innerWidth - icon.offsetWidth),
+                ) + "px";
+              icon.style.top =
+                Math.max(
+                  0,
+                  Math.min(
+                    origTop + dy,
+                    window.innerHeight - 34 - icon.offsetHeight,
+                  ),
+                ) + "px";
+              e.preventDefault();
+            },
+            { passive: false },
+          );
+          icon.addEventListener("touchend", () => {
+            icon.classList.remove("dragging");
+            if (!moved) openWindow(icon.dataset.target);
+          });
+        });
+      })();
+
+      /* =========================================================
+       BOOT
+    ========================================================= */
+      window.addEventListener("load", () => {
+        setTimeout(() => openWindow("about"), 200);
+      });
+
+      document.getElementById("desktop").addEventListener("click", (e) => {
+        if (!isMobile()) return;
+        if (e.target.closest(".window") || e.target.closest(".icon")) return;
+        const entries = Object.entries(openWindows).filter(
+          ([, w]) => !w.minimized,
+        );
+        if (!entries.length) return;
+        entries.sort(
+          ([, a], [, b]) =>
+            parseInt(b.el.style.zIndex) - parseInt(a.el.style.zIndex),
+        );
+        closeWindow(entries[0][0]);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "id": "from-high-level-code-to-machine-instructions-mn4r8gp5",
+  "title": "From High-Level Code to Machine Instructions",
+  "body": "<h4>1. The Compiler</h4>\n<p>The first stage of the pipeline is the Jack compiler. At a high level, the compiler performs three tasks: <strong>Lexical Analysis</strong>, <strong>Parsing</strong>, and <strong>Code Generation</strong> — outputting VM instructions rather than machine code directly.</p>\n<pre><code>let x = y + 2;\nbecomes:\n\npush local 1\npush constant 2\nadd\npop local 0\n</code></pre>\n\n<h4>2. The Virtual Machine</h4>\n<p>The VM Translator converts stack-based VM instructions into Hack assembly. This stage revealed how function calls, variable storage, and arithmetic all reduce to carefully orchestrated stack and memory operations.</p>\n\n<h4>3. The Assembler</h4>\n<p>The assembler translates Hack assembly into 16-bit binary instructions. It uses a two-pass process: first recording label locations, then translating and assigning memory addresses.</p>\n\n<pre><code>\nJack → VM code → Hack assembly → Machine code\n</code></pre>",
+  "date": "2026-03-24T15:13:33.065Z",
+  "source": "local"
+}
