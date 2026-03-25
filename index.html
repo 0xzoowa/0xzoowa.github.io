@@ -912,10 +912,10 @@
             id="editor-body-text"
             placeholder="Write your entry here. Plain text or basic HTML both work."
           ></textarea>
-          <div class="editor-hint">
+          <!-- <div class="editor-hint">
             Tip: wrap code in &lt;code&gt; tags. Paragraphs separated by blank
             lines auto-format.
-          </div>
+          </div> -->
         </div>
       </div>
       <div class="editor-actions">
@@ -1226,9 +1226,9 @@
             <div class="prompt-line"><span class="label">name:</span><span class="val">Omozuwa Omede</span></div>
             <div class="prompt-line"><span class="label">costume:</span><span class="val">Backend Engineer</span></div>
             <div class="prompt-line"><span class="label">focus:</span><span class="val">OS · Systems Architecture · Startups</span></div>
-            <div class="prompt-line"><span class="label">stack:</span><span class="val">C · Assembly · C# · Javascript</span></div>
+            <div class="prompt-line"><span class="label">stack:</span><span class="val">Assembly · C · C# · Javascript</span></div>
             <div class="prompt-footer">
-              I am a builder. Builders don't think in roles. They think in outcomes. They think in systems.
+              I am a builder. Builders don't think in roles. They think in outcomes.
               The role is just the costume you wear to get the work done. And over the course of a building journey, you wear many costumes.
             </div>
             <div class="prompt-footer">
@@ -1415,6 +1415,8 @@
           return;
         }
 
+        openWindows[id] = { loading: true };
+
         withJournal((items) => {
           const listHTML = renderJournalList(items);
           const win = buildWindow(
@@ -1443,7 +1445,7 @@
 
       function renderJournalList(items) {
         if (!items.length)
-          return '<p style="color:#888;font-size:12px;">No entries yet. Press Ctrl+Shift+J to write one.</p>';
+          return '<p style="color:#888;font-size:12px;">No entries yet. </p>';
         return `<ul style="list-style:none;padding:0">${items
           .map((item) => {
             const badge =
@@ -1471,17 +1473,18 @@
       }
 
       function openJournalEntry(itemId) {
+        const id = "journal-" + itemId;
+        if (openWindows[id]) {
+          restoreWindow(id);
+          focusWindow(id);
+          return;
+        }
+
         storeFind(itemId, (entry) => {
           const builtin = BUILTIN_JOURNAL.find((e) => e.id === itemId);
           const e = entry || builtin;
-          if (!e) return;
 
-          const id = "journal-" + itemId;
-          if (openWindows[id]) {
-            restoreWindow(id);
-            focusWindow(id);
-            return;
-          }
+          if (!e) return;
 
           const content = e.content; // just use pre-rendered content
 
